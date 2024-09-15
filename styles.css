@@ -1,0 +1,90 @@
+/* Authentication Pages */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f1f3f4;
+}
+
+.auth-box {
+    background-color: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.auth-box h1 {
+    font-size: 24px;
+    font-weight: 400;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #666;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    color: #333;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #4285f4;
+}
+
+.btn-login,
+.btn-signup {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    border-radius: 50px;
+    color: white;
+    background-color: #4285f4;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-signup {
+    background-color: #34a853;
+}
+
+.btn-login:hover {
+    background-color: #3367d6;
+}
+
+.btn-signup:hover {
+    background-color: #2c8f47;
+}
+
+.alt-option {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.alt-option a {
+    color: #4285f4;
+    text-decoration: none;
+}
+
+.alt-option a:hover {
+    text-decoration: underline;
+}
