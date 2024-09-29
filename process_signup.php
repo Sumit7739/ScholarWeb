@@ -13,6 +13,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check if passwords match
     if ($password !== $confirm_password) {
         echo "Passwords do not match.";
+
+        // Log the failed registration attempt
+        $activityDescription = "Failed registration attempt for email: " . $email . " - Passwords do not match.";
+        $activityQuery = "INSERT INTO activity (name, activity_description, date, type) VALUES (?, ?, NOW(), 'failed_registration')";
+        $activityStmt = mysqli_prepare($conn, $activityQuery);
+        mysqli_stmt_bind_param($activityStmt, 'ss', $name, $activityDescription);
+        mysqli_stmt_execute($activityStmt);
+        mysqli_stmt_close($activityStmt);
+
         exit;
     }
 
@@ -28,6 +37,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (mysqli_num_rows($user_result) > 0) {
             // If user already exists
             echo "This email is already registered. Please login.";
+
+            // Log the failed registration attempt
+            $activityDescription = "Failed registration attempt - email already registered: " . $email;
+            $activityQuery = "INSERT INTO activity (name, activity_description, date, type) VALUES (?, ?, NOW(), 'failed_registration')";
+            $activityStmt = mysqli_prepare($conn, $activityQuery);
+            mysqli_stmt_bind_param($activityStmt, 'ss', $name, $activityDescription);
+            mysqli_stmt_execute($activityStmt);
+            mysqli_stmt_close($activityStmt);
         } else {
             // Hash the password
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -37,6 +54,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if (mysqli_query($conn, $insert_user)) {
                 echo "Account created successfully. You can now log in.";
+
+                // Log the successful registration activity
+                $activityDescription = "User registered successfully: " . $email;
+                $activityQuery = "INSERT INTO activity (name, activity_description, date, type) VALUES (?, ?, NOW(), 'registration')";
+                $activityStmt = mysqli_prepare($conn, $activityQuery);
+                mysqli_stmt_bind_param($activityStmt, 'ss', $name, $activityDescription);
+                mysqli_stmt_execute($activityStmt);
+                mysqli_stmt_close($activityStmt);
+
                 // Redirect to login page or dashboard
             } else {
                 echo "Error: " . mysqli_error($conn);
@@ -45,6 +71,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         // Email not found in reg_stud
         echo "You are not registered or use the email you used during registration.";
+
+        // Log the failed registration attempt
+        $activityDescription = "Failed registration attempt - email not found in registration: " . $email;
+        $activityQuery = "INSERT INTO activity (name, activity_description, date, type) VALUES (?, ?, NOW(), 'failed_registration')";
+        $activityStmt = mysqli_prepare($conn, $activityQuery);
+        mysqli_stmt_bind_param($activityStmt, 'ss', $name, $activityDescription);
+        mysqli_stmt_execute($activityStmt);
+        mysqli_stmt_close($activityStmt);
     }
 }
-?>

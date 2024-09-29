@@ -50,7 +50,7 @@ nav {
     justify-content: center;
     align-items: center;
     height: 80vh;
-    background-color: #ffffff;
+    background-color: #85dfe7ae;
     text-align: center;
     padding: 0 20px;
 }
@@ -102,7 +102,7 @@ nav {
 /* Features Section */
 .features {
     padding: 20px 50px 30px 50px;
-    background-color: #f1f3f4;
+    background-color: #e7ac71c5;
 }
 
 .container {

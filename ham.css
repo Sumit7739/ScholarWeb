@@ -1,0 +1,143 @@
+header {
+  background-color: #85dfe7;
+  padding: 15px 15px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-radius: 5px;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.logo {
+  margin-right: auto; /* Pushes the logo to the left */
+}
+
+.hamburger {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  display: none; /* Hide by default */
+  cursor: pointer; /* Change cursor to pointer */
+  font-size: 24px; /* Size of hamburger icon */
+}
+
+.hamburger.active i {
+  display: none; /* Hide the hamburger icon */
+  transform: rotate(90deg); /* Rotate the hamburger icon when active */
+}
+
+.hamburger.active:before {
+  content: "\f00d"; /* FontAwesome code for the X icon */
+  font-family: "Font Awesome 5 Free"; /* Ensure the correct font is used */
+  font-weight: 900; /* Ensure it's bold */
+  display: inline-block; /* Show the X icon */
+}
+
+header nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex; /* Keep links in a row on larger screens */
+  justify-content: flex-end; /* Align links to the right */
+  align-items: center; /* Center links vertically */
+}
+
+header nav ul li {
+  margin-left: 20px;
+}
+
+header nav ul li a {
+  color: rgb(0, 0, 0);
+  text-decoration: none;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+#active {
+  color: rgb(255, 0, 0);
+}
+/* Responsive Styles */
+
+/* Tablets and smaller screens (768px and below) */
+@media (max-width: 768px) {
+  /* Adjust header and navigation */
+  .hamburger {
+    display: block; /* Show hamburger icon on mobile */
+    cursor: pointer; /* Change cursor to pointer */
+    font-size: 24px; /* Size of hamburger icon */
+    transition: transform 0.3s ease; /* Transition for transform property */
+  }
+
+  .hamburger.active {
+    transform: rotate(90deg); /* Rotate the hamburger icon when active */
+  }
+
+  header nav ul {
+    display: none; /* Hide menu by default */
+    flex-direction: column; /* Stack links vertically */
+    width: 60%; /* Full width for the menu */
+    font-size: 18px;
+    background-color: #85dfe7;
+    position: absolute; /* Position it absolutely */
+    top: 50px; /* Below the header */
+    right: 0; /* Align to the left */
+    border-radius: 8px;
+    z-index: 999; /* Make sure it's on top */
+    opacity: 0; /* Start hidden */
+    transform: translateY(-20px); /* Start with a slight upward translation */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* Transition for opacity and transform */
+  }
+
+  header nav ul.show {
+    display: flex; /* Show menu when class 'show' is added */
+    opacity: 1; /* Make it fully visible */
+    transform: translateY(0); /* Move to its original position */
+  }
+
+  header nav ul li {
+    margin: 10px 0; /* Vertical spacing for items */
+    text-align: center; /* Center text */
+    padding: 10px 10px; /* Add padding for better clickability */
+    position: relative; /* Position relative for pseudo-element */
+  }
+  header nav ul li:not(:last-child):after {
+    content: ""; /* Add a separator line */
+    display: block; /* Block level */
+    height: 1px; /* Height of the line */
+    background-color: #fff; /* Color of the line */
+    position: absolute; /* Absolute positioning */
+    left: 0; /* Align to the left */
+    right: 0; /* Align to the right */
+    bottom: 0; /* Position at the bottom */
+    margin: 0; /* Center it */
+  }
+
+  header nav ul li a:hover {
+    color: #ff2600;
+  }
+  /* Adjust font sizes */
+  body {
+    font-size: 16px;
+  }
+} /* Mobile devices (480px and below) */
+@media (max-width: 480px) {
+  /* Stack navigation items vertically */
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  header nav ul li {
+    margin-left: 0;
+    margin-bottom: 5px;
+  }
+}

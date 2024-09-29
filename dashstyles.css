@@ -1,0 +1,739 @@
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  overflow-x: hidden;
+}
+header {
+  background-color: #85dfe7;
+  padding: 15px 15px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-radius: 5px;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.logo {
+  margin-right: auto; /* Pushes the logo to the left */
+}
+
+.hamburger {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  display: none; /* Hide by default */
+  cursor: pointer; /* Change cursor to pointer */
+  font-size: 24px; /* Size of hamburger icon */
+}
+
+.hamburger.active i {
+  display: none; /* Hide the hamburger icon */
+  transform: rotate(90deg); /* Rotate the hamburger icon when active */
+}
+
+.hamburger.active:before {
+  content: "\f00d"; /* FontAwesome code for the X icon */
+  font-family: "Font Awesome 5 Free"; /* Ensure the correct font is used */
+  font-weight: 900; /* Ensure it's bold */
+  display: inline-block; /* Show the X icon */
+}
+
+header nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex; /* Keep links in a row on larger screens */
+  justify-content: flex-end; /* Align links to the right */
+  align-items: center; /* Center links vertically */
+}
+
+header nav ul li {
+  margin-left: 20px;
+}
+
+header nav ul li a {
+  color: rgb(0, 0, 0);
+  text-decoration: none;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Hero Section */
+.dashboard-container {
+  /* display: flex; */
+  justify-content: left;
+  align-items: left;
+  height: auto;
+  background-color: #85dfe7ae;
+  text-align: left;
+  padding: 10px 10px;
+  border-radius: 10px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.dashboard-container h1 {
+  font-size: 25px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.dashboard-container p {
+  font-size: 16px;
+  color: #010101;
+  margin-bottom: 30px;
+}
+
+/* Hero Section */
+.hero {
+  padding: 20px;
+}
+
+.dashboard-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.section {
+  background: #fff;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.section h2 {
+  margin-top: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.class-info-container {
+  max-height: 250px;
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #f0f8ff;
+  /* Light blue background */
+  border: 1px solid #87cefa;
+  /* Light blue border */
+  border-radius: 5px;
+  overflow: auto;
+  /* Rounded corners */
+}
+
+.class-info-container h2 {
+  display: flex;
+  align-items: center;
+  color: #333;
+  /* Darker text for better contrast */
+}
+
+.class-info-container h2 i {
+  margin-right: 10px;
+  /* Spacing for the icon */
+  color: #007bff;
+  /* Icon color */
+}
+
+.class-info-container ul {
+  list-style-type: none;
+  /* Removes bullets from the list */
+  padding: 0;
+  /* Removes default padding */
+  margin: 10px 0;
+  /* Adds space between the heading and the list */
+}
+
+.class-info-container li {
+  padding: 10px;
+  /* Adds padding around list items */
+  border: 1px solid #ccc;
+  /* Light gray border for each class */
+  border-radius: 3px;
+  /* Slightly rounded corners for list items */
+  margin-bottom: 10px;
+  /* Space between list items */
+  background-color: #ffffff;
+  /* White background for list items */
+  transition: background-color 0.3s;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset,
+    rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
+
+  /* Smooth transition for hover effect */
+}
+
+.class-info-container li:hover {
+  background-color: #e6f7ff;
+  /* Light blue background on hover */
+}
+
+.class-info-container li:last-child {
+  margin-bottom: 0;
+  /* Removes margin from the last item */
+}
+
+.tasks-container {
+  max-height: 250px;
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #f9f9f9;
+  /* Light gray background */
+  border: 1px solid #ddd;
+  /* Light gray border */
+  border-radius: 5px;
+  /* Rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  /* Subtle shadow for depth */
+  overflow: auto;
+}
+
+.tasks-container h2 {
+  display: flex;
+  align-items: center;
+  color: #333;
+  /* Darker text for better contrast */
+}
+
+.tasks-container h2 i {
+  margin-right: 10px;
+  /* Spacing for the icon */
+  color: #ff6f61;
+  /* Icon color */
+}
+
+.tasks-container ul {
+  list-style-type: none;
+  /* Removes bullets from the list */
+  padding: 0;
+  /* Removes default padding */
+  margin: 10px 0;
+  /* Adds space between the heading and the list */
+}
+
+.tasks-container li {
+  padding: 10px;
+
+  border: 1px solid #ccc;
+
+  border-radius: 3px;
+
+  margin-bottom: 10px;
+
+  background-color: #ffffff;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset,
+    rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
+  transition: background-color 0.3s;
+}
+
+.tasks-container li:hover {
+  background-color: #e6f7ff;
+  /* Light blue background on hover */
+}
+
+.tasks-container li:last-child {
+  margin-bottom: 0;
+  /* Removes margin from the last item */
+}
+
+.notifications-container {
+  max-height: 250px;
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #fff3cd;
+  /* Light yellow background for notifications */
+  border: 1px solid #ffeeba;
+  /* Light yellow border */
+  border-radius: 5px;
+  /* Rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  /* Subtle shadow for depth */
+  overflow: auto;
+}
+
+.notifications-container h2 {
+  display: flex;
+  align-items: center;
+  color: #856404;
+  /* Darker text color for better contrast */
+}
+
+.notifications-container h2 i {
+  margin-right: 10px;
+  /* Spacing for the icon */
+  color: #ffcc00;
+  /* Icon color */
+}
+
+.notifications-container ul {
+  list-style-type: none;
+  /* Removes bullets from the list */
+  padding: 0;
+  /* Removes default padding */
+  margin: 10px 0;
+  /* Adds space between the heading and the list */
+}
+
+.notifications-container li {
+  padding: 12px;
+  /* Adds padding around list items */
+  border: 1px solid #ffeeba;
+  /* Light yellow border for each notification */
+  border-radius: 3px;
+  /* Slightly rounded corners for list items */
+  margin-bottom: 10px;
+  /* Space between list items */
+  background-color: #fff;
+  /* White background for list items */
+  transition: background-color 0.3s;
+  /* Smooth transition for hover effect */
+}
+
+.notifications-container li:hover {
+  background-color: #ffeeba;
+  /* Light yellow background on hover */
+}
+
+.notifications-container li:last-child {
+  margin-bottom: 0;
+  /* Removes margin from the last item */
+}
+
+.recent-activity-container {
+  max-height: 350px;
+  margin: 20px 0;
+  padding: 20px;
+  /* padding-bottom: 10px; */
+  background-color: #f9f9f9;
+  /* Light gray background */
+  border: 1px solid #ddd;
+  /* Soft border */
+  border-radius: 8px;
+  /* Rounded corners */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  /* Subtle shadow for depth */
+  overflow: auto;
+}
+
+.recent-activity-container h2 {
+  display: flex;
+  align-items: center;
+  color: #333;
+  /* Darker text color for headings */
+  font-family: "Georgia", serif;
+  /* Classical font for headings */
+  border-bottom: 2px solid #ccc;
+  /* Underline for a classic look */
+  padding-bottom: 10px;
+  /* Space between heading and content */
+}
+
+.recent-activity-container h2 i {
+  margin-right: 10px;
+  /* Spacing for the icon */
+  color: #007bff;
+  /* Blue color for the icon */
+}
+
+.recent-activity-container ul {
+  list-style-type: none;
+  /* Removes bullets from the list */
+  padding: 5px;
+  /* Removes default padding */
+  margin: 15px 0;
+  /* Adds space between heading and list */
+}
+
+.recent-activity-container li {
+  padding: 10px;
+  /* Adds padding around list items */
+  border-bottom: 1px solid #ddd;
+  /* Soft border between items */
+  transition: background-color 0.3s;
+  /* Smooth transition for hover effect */
+}
+
+.recent-activity-container li:hover {
+  background-color: #ccc;
+  /* Light gray background on hover */
+}
+
+.recent-activity-container li:last-child {
+  border-bottom: none;
+  /* Removes border from the last item */
+}
+
+.recent-activity-container li:before {
+  content: "•";
+  /* Adds a bullet point before each activity */
+  color: #007bff;
+  /* Color of the bullet */
+  margin-right: 5px;
+  /* Space between bullet and text */
+}
+
+.section {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.progress-container {
+  max-height: 250px;
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: auto;
+}
+
+.progress-bar {
+  height: 20px;
+  background-color: #4caf50;
+  /* Green color for progress */
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.progress-wrapper {
+  background-color: #ddd;
+  /* Background for progress bar */
+  border-radius: 5px;
+  overflow: hidden;
+  /* Ensures the inner bar doesn't overflow */
+  height: 20px;
+  /* Same height as the progress bar */
+}
+
+hr {
+  color: #ddd;
+}
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  margin: 10px 0;
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+}
+
+h2 i {
+  margin-right: 10px;
+  /* Spacing for the icon */
+}
+
+footer {
+  background-color: #333;
+  /* Dark background for the footer */
+  color: #fff;
+  /* White text color */
+  padding: 20px;
+  /* Padding for the footer */
+  text-align: center;
+  /* Center align text */
+  position: relative;
+  /* Relative positioning for better control */
+  bottom: 0;
+  /* Position at the bottom */
+  width: 100%;
+  /* Full width */
+}
+
+footer p {
+  margin: 0;
+  /* Removes default margin */
+  font-size: 14px;
+  /* Font size for copyright text */
+  line-height: 1.5;
+  /* Line height for better readability */
+}
+
+.footer-links {
+  list-style-type: none;
+  /* Removes bullets from the list */
+  padding: 0;
+  /* Removes default padding */
+  margin: 10px 0 0;
+  /* Margin for spacing above */
+}
+
+.footer-links li {
+  display: inline;
+  /* Displays links in a single line */
+  margin: 0 15px;
+  /* Spacing between links */
+}
+
+.footer-links a {
+  color: #ffffff;
+  /* White color for links */
+  text-decoration: none;
+  /* Removes underline */
+  transition: color 0.3s;
+  /* Smooth transition for hover effect */
+}
+
+.footer-links a:hover {
+  color: #007bff;
+  /* Change color on hover for better visibility */
+  text-decoration: underline;
+  /* Underline on hover for emphasis */
+}
+
+.button {
+  background-color: #ffffff; /* Green background */
+  border: 1px solid #ffffffef; /* No border */
+  color: rgb(0, 0, 0); /* White text */
+  padding: 8px 15px; /* Padding for size */
+  text-align: center; /* Center the text */
+  text-decoration: none; /* No underline */
+  display: inline-block; /* Allow margin and padding */
+  font-size: 14px; /* Font size */
+  border-radius: 15px; /* Rounded corners */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Transition effects */
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  /* margin-bottom: 10px; */
+  cursor: pointer; /* Pointer cursor on hover */
+}
+
+.button:hover {
+  background-color: #ccc; /* Darker green on hover */
+}
+
+.button:active {
+  transform: scale(0.95); /* Slightly shrink the button when pressed */
+}
+
+.homework-container {
+  /* display: flex; */
+  /* justify-content: space-between; */
+  /* align-items: center; */
+  /* text-align: center; */
+  /* margin-bottom: 20px; */
+}
+
+/* CSS */
+.button {
+  background-color: #ffffff;
+  border: 0;
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+  color: #111827;
+  font-family: "Inter var", ui-sans-serif, system-ui, -apple-system, system-ui,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  text-decoration: none #d1d5db solid;
+  text-decoration-thickness: auto;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.button-38:hover {
+  background-color: rgb(249, 250, 251);
+}
+
+.button:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.button:focus-visible {
+  box-shadow: none;
+}
+
+/* Responsive Styles */
+
+/* Tablets and smaller screens (768px and below) */
+@media (max-width: 768px) {
+  /* Adjust header and navigation */
+  .hamburger {
+    display: block; /* Show hamburger icon on mobile */
+    cursor: pointer; /* Change cursor to pointer */
+    font-size: 24px; /* Size of hamburger icon */
+    transition: transform 0.3s ease; /* Transition for transform property */
+  }
+
+  .hamburger.active {
+    transform: rotate(90deg); /* Rotate the hamburger icon when active */
+  }
+
+  header nav ul {
+    display: none; /* Hide menu by default */
+    flex-direction: column; /* Stack links vertically */
+    width: 60%; /* Full width for the menu */
+    font-size: 18px;
+    background-color: #85dfe7;
+    position: absolute; /* Position it absolutely */
+    top: 50px; /* Below the header */
+    right: 0; /* Align to the left */
+    border-radius: 8px;
+    z-index: 999; /* Make sure it's on top */
+    opacity: 0; /* Start hidden */
+    transform: translateY(-20px); /* Start with a slight upward translation */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* Transition for opacity and transform */
+  }
+
+  header nav ul.show {
+    display: flex; /* Show menu when class 'show' is added */
+    opacity: 1; /* Make it fully visible */
+    transform: translateY(0); /* Move to its original position */
+  }
+
+  header nav ul li {
+    margin: 10px 0; /* Vertical spacing for items */
+    text-align: center; /* Center text */
+    padding: 10px 10px; /* Add padding for better clickability */
+    position: relative; /* Position relative for pseudo-element */
+  }
+  header nav ul li:not(:last-child):after {
+    content: ""; /* Add a separator line */
+    display: block; /* Block level */
+    height: 1px; /* Height of the line */
+    background-color: #fff; /* Color of the line */
+    position: absolute; /* Absolute positioning */
+    left: 0; /* Align to the left */
+    right: 0; /* Align to the right */
+    bottom: 0; /* Position at the bottom */
+    margin: 0; /* Center it */
+  }
+
+  header nav ul li a:hover {
+    color: #ff2600;
+  }
+  /* Adjust font sizes */
+  body {
+    font-size: 16px;
+  }
+
+  /* Dashboard container adjustments */
+  .dashboard-container {
+    padding: 15px;
+    margin: 10px;
+    box-shadow: none;
+  }
+
+  /* Adjust section margins and padding */
+  .section {
+    margin: 10px 0;
+    padding: 10px;
+  }
+
+  /* Task and info containers */
+  .tasks-container,
+  .class-info-container,
+  .notifications-container {
+    max-height: none;
+    margin: 10px 0;
+    padding: 15px;
+  }
+
+  /* Progress bar adjustments */
+  .progress-bar {
+    height: 15px;
+  }
+}
+
+/* Mobile devices (480px and below) */
+@media (max-width: 480px) {
+  /* Stack navigation items vertically */
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  header nav ul li {
+    margin-left: 0;
+    margin-bottom: 5px;
+  }
+
+  /* Reduce font sizes for better readability */
+  body {
+    font-size: 14px;
+  }
+
+  /* Adjust the size and layout of containers */
+  .dashboard-container {
+    padding: 10px;
+    margin: 5px;
+    box-shadow: none;
+  }
+  .section,
+  .tasks-container,
+  .class-info-container,
+  .notifications-container {
+    padding: 10px;
+    margin: 5px 0;
+    box-shadow: none;
+  }
+
+  /* Hero section adjustments */
+  .hero {
+    padding: 10px;
+  }
+
+  /* Adjustments to h1 and h2 font sizes */
+  .dashboard-container h1,
+  .section h2 {
+    font-size: 18px;
+  }
+
+  .tasks-container ul,
+  .class-info-container ul,
+  .notifications-container ul {
+    padding-left: 5px;
+  }
+
+  /* Progress bar adjustments */
+  .progress-bar {
+    height: 20px;
+  }
+
+  .button-17 {
+    padding: 5px 15px;
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+
+  .recent-activity-container {
+    max-height: 250px;
+  }
+
+  footer {
+    width: 90%;
+  }
+}
+
+#active{
+  color: rgb(255, 0, 0);
+}

@@ -2,6 +2,9 @@
 // Database connection
 require 'config.php';
 
+error_reporting(E_ALL); // Report all PHP errors
+ini_set('display_errors', 1); // Display errors on the page
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Sanitize input
     $name = mysqli_real_escape_string($conn, $_POST['name']);

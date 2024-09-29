@@ -24,16 +24,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['user_name'] = $user['name'];
             $_SESSION['user_email'] = $user['email'];
 
+            // Log the successful login activity
+            $activityDescription = "User logged in successfully with email: ";
+            $activityQuery = "INSERT INTO activity (name, activity_description, date, type) VALUES (?, ?, NOW(), 'login')";
+            $activityStmt = mysqli_prepare($conn, $activityQuery);
+            mysqli_stmt_bind_param($activityStmt, 'ss', $_SESSION['user_name'], $activityDescription);
+            mysqli_stmt_execute($activityStmt);
+            mysqli_stmt_close($activityStmt);
+
             // Redirect to the dashboard or home page
-            header("Location: dashboard.php");
+            header("Location: profile.php");
             exit;
         } else {
             // Invalid password
             echo "Invalid password. Please try again.";
+
+            // Log the failed login attempt
+            $activityDescription = "Failed login attempt for email: ";
+            $activityQuery = "INSERT INTO activity (name, activity_description, date, type) VALUES (?, ?, NOW(), 'failed_login')";
+            $activityStmt = mysqli_prepare($conn, $activityQuery);
+            mysqli_stmt_bind_param($activityStmt, 'ss', $email, $activityDescription);
+            mysqli_stmt_execute($activityStmt);
+            mysqli_stmt_close($activityStmt);
         }
     } else {
         // User not found
         echo "No account found with that email. Please sign up.";
+
+        // Log the failed login attempt
+        $activityDescription = "Failed login attempt for non-existing email: ";
+        $activityQuery = "INSERT INTO activity (name, activity_description, date, type) VALUES (?, ?, NOW(), 'failed_login')";
+        $activityStmt = mysqli_prepare($conn, $activityQuery);
+        mysqli_stmt_bind_param($activityStmt, 'ss', $email, $activityDescription);
+        mysqli_stmt_execute($activityStmt);
+        mysqli_stmt_close($activityStmt);
     }
 }
-?>
