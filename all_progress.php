@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 
-$modulesStmt = $pdo->prepare("SELECT * FROM modules");
+$modulesStmt = $pdo->prepare("SELECT * FROM modules ORDER by id DESC");
 $modulesStmt->execute();
 $modules = $modulesStmt->fetchAll(PDO::FETCH_ASSOC);
 

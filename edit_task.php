@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_task'])) {
 }
 
 // Fetch all tasks
-$stmt_tasks = $pdo->prepare("SELECT id, task_name, task_description, due_date, status, created_at FROM task");
+$stmt_tasks = $pdo->prepare("SELECT id, task_name, task_description, due_date, status, created_at FROM task ORDER BY created_at DESC");
 $stmt_tasks->execute();
 $tasks = $stmt_tasks->fetchAll(PDO::FETCH_ASSOC);
 ?>

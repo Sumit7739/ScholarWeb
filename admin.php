@@ -224,6 +224,10 @@ $schedules_count = $conn->query("SELECT COUNT(*) as total FROM class_schedules")
             <div class="card">
                 <h3>View Logs</h3>
                 <a href="all_activities.php">Activity Logs</a>
+            </div> 
+            <div class="card">
+                <h3>Delete Activity</h3>
+                <a href="delactivity.php">Delete Activity</a>
             </div>
         </div>
     </div>

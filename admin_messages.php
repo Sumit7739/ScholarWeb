@@ -44,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reply'])) {
 // Fetch contact messages
 $sql = "SELECT cm.id, cm.user_id, cm.message, cm.created_at, u.name AS user_name 
         FROM contact_messages cm 
-        JOIN users u ON cm.user_id = u.id";  // Assuming you have a users table
+        JOIN users u ON cm.user_id = u.id ORDER BY cm.created_at DESC";  // Assuming you have a users table
 $result = $conn->query($sql);
 ?>
 

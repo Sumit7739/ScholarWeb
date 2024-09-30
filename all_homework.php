@@ -19,7 +19,7 @@ $stmt = $pdo->prepare("
     SELECT uh.task_no, uh.task_name, uh.description, uh.url, uh.created_at AS timestamp, u.name 
     FROM user_homework uh 
     JOIN users u ON uh.user_id = u.id 
-    WHERE uh.user_id = :user_id
+    WHERE uh.user_id = :user_id ORDER BY uh.created_at DESC
 ");
 $stmt->bindParam(':user_id', $user_id);
 $stmt->execute();

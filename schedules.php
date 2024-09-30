@@ -31,12 +31,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_schedule'])) {
     $stmt_log = $pdo->prepare("INSERT INTO activity (name, activity_description, date, type) VALUES ('admin', :activity_description, NOW(), 'addition')");
     $stmt_log->execute(['activity_description' => $activity_description]);
 
-    header("Location: addschedules.php"); // Redirect to avoid resubmission
+    header("Location: schedules.php"); // Redirect to avoid resubmission
     exit;
 }
 
 // Fetch existing schedules for display (optional)
-$stmt_schedules = $pdo->prepare("SELECT * FROM class_schedules");
+$stmt_schedules = $pdo->prepare("SELECT * FROM class_schedules ORDER BY created_at DESC");
 $stmt_schedules->execute();
 $schedules = $stmt_schedules->fetchAll(PDO::FETCH_ASSOC);
 ?>

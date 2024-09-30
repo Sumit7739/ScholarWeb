@@ -15,7 +15,7 @@ if (!isset($_SESSION['user_id'])) {
 require_once 'db.php'; // Make sure to include your database connection
 
 // Fetch all tasks from the database
-$stmt_tasks = $pdo->prepare("SELECT id, task_name, task_description, due_date, status, created_at FROM task");
+$stmt_tasks = $pdo->prepare("SELECT id, task_name, task_description, due_date, status, created_at FROM task ORDER by created_at DESC");
 $stmt_tasks->execute();
 $tasks = $stmt_tasks->fetchAll(PDO::FETCH_ASSOC);
 ?>
