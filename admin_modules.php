@@ -121,26 +121,56 @@ $modules = $stmt_modules->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="dashstyles.css">
     <style>
         body {
-            font-family: sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            color: #333;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        h1 {
+            font-size: 32px;
+        }
+
+        h2 {
+            font-size: 26px;
         }
 
         .module-container {
-            border: 1px solid #ccc;
-            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            padding: 20px;
             margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .module-container h3 {
+            font-size: 24px;
+            color: #0073e6;
+        }
+
+        .module-container p {
+            font-size: 16px;
+            color: #555;
         }
 
         .topic-container {
-            margin-top: 10px;
-            border: 1px dashed #888;
-            padding: 5px;
             background-color: #f9f9f9;
-        }
-
-        .topic-container td {
-            padding: 5px;
+            padding: 10px;
+            margin-top: 15px;
+            border: 1px solid #d1d1d1;
+            border-radius: 6px;
         }
 
         table {
@@ -151,58 +181,87 @@ $modules = $stmt_modules->fetchAll(PDO::FETCH_ASSOC);
 
         th,
         td {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
+            padding: 12px;
             text-align: left;
+            border-bottom: 1px solid #ddd;
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: #0073e6;
+            color: #fff;
+        }
+
+        td select {
+            padding: 5px;
+            font-size: 14px;
         }
 
         button {
-            padding: 8px 12px;
-            background-color: #4CAF50;
+            padding: 10px 15px;
+            font-size: 14px;
+            background-color: #28a745;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin-bottom: 10px;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
-            background-color: #45a049;
+            background-color: #218838;
         }
 
-        .delete-button {
-            background-color: red;
-            margin-left: 10px;
+        button.delete-button {
+            background-color: #dc3545;
         }
 
-        .delete-button:hover {
-            background-color: darkred;
+        button.delete-button:hover {
+            background-color: #c82333;
         }
 
-        .success-message {
-            color: green;
-            text-align: center;
-            font-size: 16px;
-            margin-bottom: 20px;
-            display: none;
-            /* Initially hidden */
+        form input[type="text"],
+        form select {
+            padding: 10px;
+            font-size: 14px;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
-        .error-message {
-            color: red;
-            text-align: center;
-            font-size: 16px;
-            margin-bottom: 20px;
-            display: none;
-            /* Initially hidden */
+        form input[type="text"]:focus,
+        form select:focus {
+            border-color: #0073e6;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 115, 230, 0.1);
+        }
+
+        button[type="submit"] {
+            background-color: #0073e6;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #005bb5;
+        }
+
+        #modules {
+            margin-top: 20px;
         }
     </style>
 </head>
 
 <body>
+
+    <header>
+        <nav>
+            <ul>
+                <li> <a href="admin.php">Back to Admin Dashboard</a></li>
+            </ul>
+        </nav>
+    </header>
     <h1>Module Management</h1>
 
     <!-- Module Creation Form -->
@@ -221,6 +280,7 @@ $modules = $stmt_modules->fetchAll(PDO::FETCH_ASSOC);
         foreach ($modules as $module): ?>
             <div class="module-container">
                 <h3><?php echo htmlspecialchars($module['name']); ?></h3>
+                <p><?php echo htmlspecialchars($module['created_at']); ?></p>
                 <p>Total Topics: <?php echo htmlspecialchars($module['total_topics']); ?>, Progress:
                     <?php echo htmlspecialchars($module['progress']); ?>%</p>
                 <button

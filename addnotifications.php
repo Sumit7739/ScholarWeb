@@ -26,11 +26,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_notification'])) {
     $notification_text = htmlspecialchars($_POST['notification_text']);
 
     $stmt_add = $pdo->prepare("INSERT INTO notifications (notification_text) VALUES (:notification_text)");
-    $stmt_add->execute(['notification_text' => $notification_text]);
-
-    logAction($pdo, "added notification: $notification_text");
-
-    header("Location: addnotifications.php"); // Redirect to avoid resubmission
+    if ($stmt_add->execute(['notification_text' => $notification_text])) {
+        logAction($pdo, "added notification: $notification_text");
+        header("Location: addnotifications.php");
+    } else {
+        echo "Error adding notification!";
+    }
     exit;
 }
 
@@ -39,11 +40,12 @@ if (isset($_GET['mark_read'])) {
     $notification_id = intval($_GET['mark_read']);
 
     $stmt_update = $pdo->prepare("UPDATE notifications SET is_read = 1 WHERE id = :id");
-    $stmt_update->execute(['id' => $notification_id]);
-
-    logAction($pdo, "marked notification ID $notification_id as read");
-
-    header("Location: addnotifications.php");
+    if ($stmt_update->execute(['id' => $notification_id])) {
+        logAction($pdo, "marked notification ID $notification_id as read");
+        header("Location: addnotifications.php");
+    } else {
+        echo "Error marking notification as read!";
+    }
     exit;
 }
 
@@ -52,11 +54,12 @@ if (isset($_GET['delete'])) {
     $notification_id = intval($_GET['delete']);
 
     $stmt_delete = $pdo->prepare("DELETE FROM notifications WHERE id = :id");
-    $stmt_delete->execute(['id' => $notification_id]);
-
-    logAction($pdo, "Deleted notification ID $notification_id");
-
-    header("Location: addnotifications.php");
+    if ($stmt_delete->execute(['id' => $notification_id])) {
+        logAction($pdo, "deleted notification ID $notification_id");
+        header("Location: addnotifications.php");
+    } else {
+        echo "Error deleting notification!";
+    }
     exit;
 }
 
@@ -78,27 +81,27 @@ $logs = $stmt_logs->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Notifications</title>
-    <!-- <link rel="stylesheet" href="dashstyles.css"> -->
     <style>
-        body{
-            font-family: sans-serif;
+        body {
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
+            background-color: #f4f4f9;
         }
 
         .notifications {
-            width: 100%;
-            max-width: 800px;
+            width: 95%;
+            /* max-width: 800px; */
             margin: 20px auto;
             padding: 20px;
-            background-color: white;
+            background-color: #ffffff;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         .notifications h2 {
             font-size: 24px;
-            font-weight: 400;
+            font-weight: bold;
             margin-bottom: 20px;
             color: #333;
         }
@@ -109,30 +112,35 @@ $logs = $stmt_logs->fetchAll(PDO::FETCH_ASSOC);
 
         .notifications label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 30px;
             font-weight: bold;
+            color: #333;
         }
 
         .notifications textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 8px;
             box-sizing: border-box;
             resize: vertical;
+            background-color: #fafafa;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
 
         .notifications button {
-            background-color: #4CAF50;
+            background-color: #4285f4;
             color: white;
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-weight: bold;
         }
 
         .notifications button:hover {
-            background-color: #3e8e41;
+            background-color: #357ae8;
         }
 
         .notifications ul {
@@ -141,42 +149,67 @@ $logs = $stmt_logs->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .notifications li {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #fff9db;
+            /* Yellow background for notifications */
+            border: 1px solid #f7d60c;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #333;
+        }
+
+        .notifications li span {
+            font-size: 12px;
+            color: #666;
+            margin-left: 10px;
         }
 
         .notifications li a {
             color: #4285f4;
             text-decoration: none;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 4px;
+            background-color: #f1f1f1;
         }
 
         .notifications li a:hover {
-            text-decoration: underline;
+            background-color: #e0e0e0;
+            color: #333;
         }
 
         /* Header */
         header {
-            background-color: #4285f4;
+            background-color: #333;
             color: white;
-            padding: 10px 0;
+            padding: 15px 0;
             text-align: center;
         }
 
         header .logo {
-            font-size: 24px;
-            font-weight: bold; 
+            font-size: 28px;
+            font-weight: bold;
         }
+
+        /* Footer */
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
     </style>
 </head>
 
 <body>
+
     <header>
         <nav>
             <div class="logo">Admin Panel</div>
-            <ul class="menu">
-                <li><a href="admin_profile.php">Dashboard</a></li>
-                <li><a href="logout.php">Logout</a></li>
-            </ul>
         </nav>
     </header>
 
@@ -210,6 +243,7 @@ $logs = $stmt_logs->fetchAll(PDO::FETCH_ASSOC);
     <footer>
         <p>&copy; 2024 ScholarWeb. All Rights Reserved.</p>
     </footer>
+
 </body>
 
 </html>

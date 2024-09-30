@@ -31,7 +31,7 @@ $progress = [];
 // Check for class schedule
 $tableExists = $pdo->query("SHOW TABLES LIKE 'class_schedules'")->rowCount() > 0;
 if ($tableExists) {
-    $stmt_classes = $pdo->prepare("SELECT class_name, schedule_date, time FROM class_schedules");
+    $stmt_classes = $pdo->prepare("SELECT class_name, schedule_date, time FROM class_schedules ORDER BY id DESC");
     $stmt_classes->execute();
     $classes = $stmt_classes->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -39,7 +39,7 @@ if ($tableExists) {
 // Check for tasks
 $tableExists = $pdo->query("SHOW TABLES LIKE 'task'")->rowCount() > 0;
 if ($tableExists) {
-    $stmt_tasks = $pdo->prepare("SELECT id, task_name, due_date FROM task ");
+    $stmt_tasks = $pdo->prepare("SELECT id, task_name, due_date FROM task ORDER BY id DESC ");
     $stmt_tasks->execute();
     $tasks = $stmt_tasks->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -63,7 +63,7 @@ if ($tableExists) {
 // Check for progress tracker data
 $tableExists = $pdo->query("SHOW TABLES LIKE 'modules'")->rowCount() > 0;
 if ($tableExists) {
-    $stmt_progress = $pdo->prepare("SELECT name, progress FROM modules ");
+    $stmt_progress = $pdo->prepare("SELECT name, progress FROM modules ORDER BY id DESC");
     $stmt_progress->execute();
     $progress = $stmt_progress->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -223,8 +223,8 @@ function getActivityColor($activity_description)
                 <h2>Resources</h2>
                 <hr>
                 <ul>
-                    <li><a href="resources/css_guide.pdf">CSS Guide</a></li>
-                    <li><a href="resources/javascript_tutorial.pdf">JavaScript Tutorial</a></li>
+                    <li><a href="https://sumit7739.github.io/Webdev/" target="_blank">Webdev Documentation</a></li>
+                    
                 </ul>
             </div>
         </div>

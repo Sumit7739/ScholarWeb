@@ -92,15 +92,14 @@ if (isset($_GET['delete_id'])) {
     <title>User Management</title>
     <!-- <link rel="stylesheet" href="adminstyles.css"> -->
     <style>
-        /* Admin Panel Content */
         .admin-content {
-            width: 100%;
-            max-width: 1000px;
+            width: 95%;
+            /* max-width: 1000px; */
             margin: 20px auto;
             padding: 20px;
             background-color: white;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         .admin-content h1 {

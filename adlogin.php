@@ -60,7 +60,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <button type="submit" class="btn btn-login">Login</button>
             </form>
-            <p class="alt-option">Don't have an account? <a href="adsignup.php">Sign Up</a></p>
         </div>
     </div>
 </body>

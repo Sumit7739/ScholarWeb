@@ -57,13 +57,13 @@ $schedules = $stmt_schedules->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .container {
-            width: 100%;
-            max-width: 600px;
+            width: 95%;
+            /* max-width: 600px; */
             margin: 0 auto;
             padding: 20px;
             background-color: #f2f2f2;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         h1 {
@@ -152,7 +152,7 @@ $schedules = $stmt_schedules->fetchAll(PDO::FETCH_ASSOC);
 
     <br>
 
-    <a href="gen_task.php">Generate Task</a>
+    <!-- <a href="gen_task.php">Generate Task</a> -->
 </body>
 
 </html>
