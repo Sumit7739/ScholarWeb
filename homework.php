@@ -28,6 +28,14 @@ $stmt_user->bind_param("i", $user_id);
 $stmt_user->execute();
 $stmt_user->bind_result($user_name);
 $stmt_user->fetch();
+$stmt_user->close(); // Close the statement after fetching the result
+
+// Fetch tasks from the `task` table
+$stmt_tasks = mysqli_prepare($conn, "SELECT id, task_name, task_description, due_date, status, created_at FROM task ORDER by created_at DESC");
+mysqli_stmt_execute($stmt_tasks);
+$result = mysqli_stmt_get_result($stmt_tasks);
+$tasks = mysqli_fetch_all($result, MYSQLI_ASSOC);
+mysqli_stmt_close($stmt_tasks); // Close the statement after fetching the tasks
 
 // Check if form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -38,31 +46,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
 
     // Bind parameters
-    $stmt->bind_param("iiss", $user_id, $_POST['task_no'], $_POST['task_name'], $_POST['description'], $_POST['url']);
+    $stmt->bind_param("iisss", $user_id, $_POST['task_no'], $_POST['task_name'], $_POST['description'], $_POST['url']);
 
     // Execute the query
     if ($stmt->execute()) {
-        // If homework submission was successful, log the activity
+        // Log activity
         $activity_description = $user_name . " submitted Homework: Task #" . $_POST['task_no'] . " (" . $_POST['task_name'] . ")";
         $activity_type = "Homework Submission";
         $additional_data = "URL: " . $_POST['url'];
 
-        // Insert activity log into `activity` table
+        // Insert into activity log
         $stmt_activity = $conn->prepare("
             INSERT INTO activity (name, activity_description, date, type, additional_data)
             VALUES (?, ?, NOW(), ?, ?)
         ");
-        $stmt_activity->bind_param("sssss", $user_name, $activity_description, $activity_type, $additional_data);
-
-        // Execute the activity log query
+        $stmt_activity->bind_param("ssss", $user_name, $activity_description, $activity_type, $additional_data);
         $stmt_activity->execute();
+        $stmt_activity->close(); // Close the activity statement
 
         $message = "Homework submitted successfully";
         header("Location: all_homework.php");
+        exit;
     } else {
         $message = "There was an error submitting the homework.";
     }
+    $stmt->close(); // Close the homework statement
 }
+
+$conn->close(); // Close the database connection
 ?>
 
 
@@ -155,6 +166,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-top: 20px;
         }
 
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px auto;
+            max-width: 800px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table th,
+        table td {
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tr:hover {
+            background-color: #e9ecef;
+        }
+
+        table td {
+            font-size: 14px;
+        }
+
+        table td a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        table td a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+
+            form,
+            table {
+                width: 90%;
+            }
+        }
+
         @media screen and (max-width: 600px) {
             .container {
                 padding: 10px;
@@ -193,7 +257,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit"><i class="fa fa-paper-plane"></i> Submit Homework</button>
         </form>
     </div>
-
+    <!-- Display Tasks -->
+    <h2>Task List</h2>
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Task Name</th>
+                <th>Task Description</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($tasks)) : ?>
+                <?php foreach ($tasks as $task) : ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($task['task_name']); ?></td>
+                        <td><?php echo htmlspecialchars($task['task_description']); ?></td>
+                        <td><?php echo htmlspecialchars($task['due_date']); ?></td>
+                        <td><?php echo htmlspecialchars($task['status']); ?></td>
+                        <td><?php echo htmlspecialchars($task['created_at']); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else : ?>
+                <tr>
+                    <td colspan="5">No tasks found.</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
 </body>
 
 </html>
