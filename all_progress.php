@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'db.php';
+include 'config.php';
 
 
 if (!isset($_SESSION['user_id'])) {
@@ -9,9 +9,10 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 
-$modulesStmt = $pdo->prepare("SELECT * FROM modules ORDER by id DESC");
-$modulesStmt->execute();
-$modules = $modulesStmt->fetchAll(PDO::FETCH_ASSOC);
+$modulesStmt = mysqli_prepare($conn, "SELECT * FROM modules ORDER by id DESC");
+mysqli_stmt_execute($modulesStmt);
+$modules = mysqli_stmt_get_result($modulesStmt);
+$modules = mysqli_fetch_all($modules, MYSQLI_ASSOC);
 
 ?>
 
@@ -156,10 +157,11 @@ $modules = $modulesStmt->fetchAll(PDO::FETCH_ASSOC);
             <!-- Topics List -->
             <?php
 
-            $topicsStmt = $pdo->prepare("SELECT * FROM topics WHERE module_id = :module_id");
-            $topicsStmt->bindParam(':module_id', $module['id']);
-            $topicsStmt->execute();
-            $topics = $topicsStmt->fetchAll(PDO::FETCH_ASSOC);
+            $topicsStmt = mysqli_prepare($conn, "SELECT * FROM topics WHERE module_id = ?");
+            mysqli_stmt_bind_param($topicsStmt, "i", $module['id']);
+            mysqli_stmt_execute($topicsStmt);
+            $topics = mysqli_stmt_get_result($topicsStmt);
+            $topics = mysqli_fetch_all($topics, MYSQLI_ASSOC);
             ?>
             <div class="topics">
                 <h4>Topics:</h4>

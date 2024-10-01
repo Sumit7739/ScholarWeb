@@ -1,3 +1,10 @@
+<?php
+session_start();
+error_reporting(E_ALL); // Report all PHP errors
+ini_set('display_errors', 1); // Display errors on the page
+
+include 'config.php'; // Database connection
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -161,18 +168,16 @@
     </div>
     <div class="feed-posts feed-container">
         <!-- Loop through feed posts here -->
+
         <?php
-        session_start();
-
-
-        error_reporting(E_ALL); // Report all PHP errors
-        ini_set('display_errors', 1); // Display errors on the page
-
-        include 'db.php'; // Database connection
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: login.html");
+            exit;
+        }
         $query = "SELECT posts.*, users.name FROM posts JOIN users ON posts.user_id = users.id ORDER BY post_date DESC";
-        $result = $pdo->query($query);
+        $result = mysqli_query($conn, $query);
 
-        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+        while ($row = mysqli_fetch_assoc($result)) {
             $post_id = $row['id'];
             $likes_count = $row['likes_count'];
 
@@ -199,9 +204,9 @@
 
             // Fetch and display replies for each post
             $reply_query = "SELECT replies.*, users.name FROM replies JOIN users ON replies.user_id = users.id WHERE post_id = $post_id ORDER BY replies.created_at ASC";
-            $reply_result = $pdo->query($reply_query);
+            $reply_result = mysqli_query($conn, $reply_query);
 
-            while ($reply_row = $reply_result->fetch(PDO::FETCH_ASSOC)) {
+            while ($reply_row = mysqli_fetch_assoc($reply_result)) {
                 echo " <br> <div class='reply'>
                             <strong>{$reply_row['name']}</strong> - <small>{$reply_row['created_at']}</small><br>
                             {$reply_row['reply_content']}
@@ -212,7 +217,6 @@
         }
         ?>
     </div>
-
     <script>
         function likePost(post_id) {
             // Send an AJAX request to like/unlike the post

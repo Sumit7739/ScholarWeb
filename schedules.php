@@ -10,7 +10,7 @@ if (!isset($_SESSION['admin_id'])) {
 }
 
 // Database connection
-include 'db.php'; // Include your database connection file
+include 'config.php'; // Include your database connection file
 
 // Handle adding a new schedule
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_schedule'])) {
@@ -19,26 +19,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_schedule'])) {
     $time = htmlspecialchars($_POST['time']);
 
     // Insert the new schedule into the database
-    $stmt_add = $pdo->prepare("INSERT INTO class_schedules (class_name, schedule_date, time, created_at) VALUES (:class_name, :schedule_date, :time, NOW())");
-    $stmt_add->execute([
-        'class_name' => $class_name,
-        'schedule_date' => $schedule_date,
-        'time' => $time
-    ]);
+    $stmt_add = $conn->prepare("INSERT INTO class_schedules (class_name, schedule_date, time, created_at) VALUES (?, ?, ?, NOW())");
+    $stmt_add->bind_param("sss", $class_name, $schedule_date, $time); // "sss" means three strings
 
-    // Log the activity of adding a new schedule
-    $activity_description = "Added a new schedule for class '$class_name' on '$schedule_date' at '$time'.";
-    $stmt_log = $pdo->prepare("INSERT INTO activity (name, activity_description, date, type) VALUES ('admin', :activity_description, NOW(), 'addition')");
-    $stmt_log->execute(['activity_description' => $activity_description]);
+    // Execute the statement
+    if ($stmt_add->execute()) {
+        // Log the activity of adding a new schedule
+        $activity_description = "Added a new schedule for class '$class_name' on '$schedule_date' at '$time'.";
+        $stmt_log = $conn->prepare("INSERT INTO activity (name, activity_description, date, type) VALUES ('admin', ?, NOW(), 'addition')");
+        $stmt_log->bind_param("s", $activity_description); // "s" means a string
+        $stmt_log->execute();
 
-    header("Location: schedules.php"); // Redirect to avoid resubmission
-    exit;
+        header("Location: schedules.php"); // Redirect to avoid resubmission
+        exit;
+    } else {
+        // Handle error case (optional)
+        echo "Error adding schedule: " . $stmt_add->error;
+    }
+
+    // Close the statement
+    $stmt_add->close();
+    $stmt_log->close();
 }
 
 // Fetch existing schedules for display (optional)
-$stmt_schedules = $pdo->prepare("SELECT * FROM class_schedules ORDER BY created_at DESC");
+$stmt_schedules = $conn->prepare("SELECT * FROM class_schedules ORDER BY created_at DESC");
 $stmt_schedules->execute();
-$schedules = $stmt_schedules->fetchAll(PDO::FETCH_ASSOC);
+$result = $stmt_schedules->get_result(); // Get the result set from the prepared statement
+$schedules = $result->fetch_all(MYSQLI_ASSOC); // Fetch all schedules as an associative array
+
+// Close the statement
+$stmt_schedules->close();
 ?>
 
 <!DOCTYPE html>

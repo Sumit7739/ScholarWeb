@@ -9,14 +9,18 @@ if (!isset($_SESSION['admin_id'])) {
     exit;
 }
 
-
 // Database connection
-include 'db.php'; // Include your database connection file
+include 'config.php'; // Include your database connection file
 
 // Fetch users
-$stmt_users = $pdo->prepare("SELECT id, name, email, college_name, semester, year, admission, father_name FROM reg_stud");
-$stmt_users->execute();
-$users = $stmt_users->fetchAll(PDO::FETCH_ASSOC);
+$query_users = "SELECT id, name, email, college_name, semester, year, admission, father_name FROM reg_stud";
+$result_users = mysqli_query($conn, $query_users);
+
+if (!$result_users) {
+    die("Query failed: " . mysqli_error($conn));
+}
+
+$users = mysqli_fetch_all($result_users, MYSQLI_ASSOC);
 
 // Handle adding a new user
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_user'])) {
@@ -28,25 +32,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_user'])) {
     $admission = (int)$_POST['admission'];
     $father_name = htmlspecialchars($_POST['father_name']);
 
+    $query_add = "INSERT INTO reg_stud (name, email, college_name, semester, year, admission, father_name) 
+                  VALUES ('$name', '$email', '$college_name', '$semester', $year, $admission, '$father_name')";
 
-    $stmt_add = $pdo->prepare("INSERT INTO reg_stud (name, email, college_name, semester, year, admission, father_name) VALUES (:name, :email, :college_name, :semester, :year, :admission, :father_name)");
-    $stmt_add->execute([
-        'name' => $name,
-        'email' => $email,
-        'college_name' => $college_name,
-        'semester' => $semester,
-        'year' => $year,
-        'admission' => $admission,
-        'father_name' => $father_name
-    ]);
-    header("Location: adduser.php"); // Redirect to avoid resubmission
+    if (mysqli_query($conn, $query_add)) {
+        header("Location: adduser.php"); // Redirect to avoid resubmission
+        exit;
+    } else {
+        echo "Error: " . mysqli_error($conn);
+    }
 }
 
 // Handle editing a user
 if (isset($_GET['edit_id'])) {
-    $stmt_edit = $pdo->prepare("SELECT id, name, email, college_name, semester, year, admission, father_name FROM reg_stud WHERE id = :id");
-    $stmt_edit->execute(['id' => $_GET['edit_id']]);
-    $edit_user = $stmt_edit->fetch();
+    $edit_id = (int)$_GET['edit_id'];
+    $query_edit = "SELECT id, name, email, college_name, semester, year, admission, father_name 
+                   FROM reg_stud WHERE id = $edit_id";
+    $result_edit = mysqli_query($conn, $query_edit);
+
+    if (!$result_edit) {
+        die("Query failed: " . mysqli_error($conn));
+    }
+
+    $edit_user = mysqli_fetch_assoc($result_edit);
 }
 
 // Handle updating a user
@@ -60,27 +68,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_user'])) {
     $admission = (int)$_POST['admission'];
     $father_name = htmlspecialchars($_POST['father_name']);
 
-    $stmt_update = $pdo->prepare("UPDATE reg_stud SET name = :name, email = :email, college_name = :college_name, semester = :semester, year = :year, admission = :admission, father_name = :father_name WHERE id = :id");
-    $stmt_update->execute([
-        'name' => $name,
-        'email' => $email,
-        'college_name' => $college_name,
-        'semester' => $semester,
-        'year' => $year,
-        'id' => $user_id,
-        'admission' => $admission,
-        'father_name' => $father_name
-    ]);
-    header("Location: adduser.php"); // Redirect to avoid resubmission
+    $query_update = "UPDATE reg_stud 
+                     SET name = '$name', email = '$email', college_name = '$college_name', 
+                         semester = '$semester', year = $year, admission = $admission, 
+                         father_name = '$father_name' 
+                     WHERE id = $user_id";
+
+    if (mysqli_query($conn, $query_update)) {
+        header("Location: adduser.php"); // Redirect to avoid resubmission
+        exit;
+    } else {
+        echo "Error: " . mysqli_error($conn);
+    }
 }
 
 // Handle deleting a user
 if (isset($_GET['delete_id'])) {
-    $stmt_delete = $pdo->prepare("DELETE FROM reg_stud WHERE id = :id");
-    $stmt_delete->execute(['id' => $_GET['delete_id']]);
-    header("Location: adduser.php"); // Redirect to avoid resubmission
+    $delete_id = (int)$_GET['delete_id'];
+    $query_delete = "DELETE FROM reg_stud WHERE id = $delete_id";
+
+    if (mysqli_query($conn, $query_delete)) {
+        header("Location: adduser.php"); // Redirect to avoid resubmission
+        exit;
+    } else {
+        echo "Error: " . mysqli_error($conn);
+    }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -331,7 +346,7 @@ if (isset($_GET['delete_id'])) {
         <?php if (isset($edit_user)): ?>
             <h2>Edit User</h2>
             <form method="POST" action="">
-                
+
                 <input type="hidden" name="user_id" value="<?php echo $edit_user['id']; ?>">
                 <input type="text" name="name" value="<?php echo htmlspecialchars($edit_user['name']); ?>" required>
                 <input type="email" name="email" value="<?php echo htmlspecialchars($edit_user['email']); ?>" required>

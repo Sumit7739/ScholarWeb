@@ -10,20 +10,28 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-include 'db.php';
+// Include your database connection file
+include 'config.php';
 
 $user_id = $_SESSION['user_id'];
 
 // Fetch user name and homework data
-$stmt = $pdo->prepare("
+$sql = "
     SELECT uh.task_no, uh.task_name, uh.description, uh.url, uh.created_at AS timestamp, u.name 
     FROM user_homework uh 
     JOIN users u ON uh.user_id = u.id 
-    WHERE uh.user_id = :user_id ORDER BY uh.created_at DESC
-");
-$stmt->bindParam(':user_id', $user_id);
+    WHERE uh.user_id = ?
+    ORDER BY uh.created_at DESC
+";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
 $stmt->execute();
-$homeworkData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$result = $stmt->get_result();
+$homeworkData = $result->fetch_all(MYSQLI_ASSOC);
+
+// Close the connection (optional but good practice)
+$conn->close();
 ?>
 
 <!DOCTYPE html>

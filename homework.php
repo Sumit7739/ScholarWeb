@@ -11,30 +11,34 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Include database connection
-include 'db.php';
+include 'config.php';
+
+// Create a new MySQLi connection
+$conn = new mysqli($host, $username, $password, $database);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
 // Fetch user name from `user` table using user_id
 $user_id = $_SESSION['user_id'];
-$stmt_user = $pdo->prepare("SELECT name FROM users WHERE id = :user_id");
-$stmt_user->bindParam(':user_id', $user_id);
+$stmt_user = $conn->prepare("SELECT name FROM users WHERE id = ?");
+$stmt_user->bind_param("i", $user_id);
 $stmt_user->execute();
-$user = $stmt_user->fetch(PDO::FETCH_ASSOC);
-$user_name = $user['name']; // Fetch the user's name
+$stmt_user->bind_result($user_name);
+$stmt_user->fetch();
 
 // Check if form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Insert homework into the `user_homework` table
-    $stmt = $pdo->prepare("
-        INSERT INTO user_homework (user_id, task_no, task_name, description, url) 
-        VALUES (:user_id, :task_no, :task_name, :description, :url)
+    $stmt = $conn->prepare("
+        INSERT INTO user_homework (user_id, task_no, task_name, description, url)
+        VALUES (?, ?, ?, ?, ?)
     ");
 
     // Bind parameters
-    $stmt->bindParam(':user_id', $user_id);
-    $stmt->bindParam(':task_no', $_POST['task_no']);
-    $stmt->bindParam(':task_name', $_POST['task_name']);
-    $stmt->bindParam(':description', $_POST['description']);
-    $stmt->bindParam(':url', $_POST['url']);
+    $stmt->bind_param("iiss", $user_id, $_POST['task_no'], $_POST['task_name'], $_POST['description'], $_POST['url']);
 
     // Execute the query
     if ($stmt->execute()) {
@@ -44,14 +48,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $additional_data = "URL: " . $_POST['url'];
 
         // Insert activity log into `activity` table
-        $stmt_activity = $pdo->prepare("
-            INSERT INTO activity (name, activity_description, date, type, additional_data) 
-            VALUES (:name, :activity_description, NOW(), :type, :additional_data)
+        $stmt_activity = $conn->prepare("
+            INSERT INTO activity (name, activity_description, date, type, additional_data)
+            VALUES (?, ?, NOW(), ?, ?)
         ");
-        $stmt_activity->bindParam(':name', $user_name);
-        $stmt_activity->bindParam(':activity_description', $activity_description);
-        $stmt_activity->bindParam(':type', $activity_type);
-        $stmt_activity->bindParam(':additional_data', $additional_data);
+        $stmt_activity->bind_param("sssss", $user_name, $activity_description, $activity_type, $additional_data);
 
         // Execute the activity log query
         $stmt_activity->execute();

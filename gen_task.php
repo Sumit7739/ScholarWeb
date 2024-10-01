@@ -3,49 +3,72 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Check if user is logged in
-// Check if user is admin
+// Check if user is logged in as admin
 if (!isset($_SESSION['admin_id'])) {
     header("Location: adlogin.php");
     exit;
 }
 
 // Database connection
-include 'db.php'; // Include your database connection file
+require_once 'config.php'; // Use require_once for critical files
+
+// Create a new MySQLi connection
+// $conn = new mysqli($db_host, $db_username, $db_password, $db_name);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
 // Handle task insertion
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create_task'])) {
-    // Admin is inserting the task, so we'll log it with "admin" as the name
-    $task_name = htmlspecialchars($_POST['task_name']);
-    $task_description = htmlspecialchars($_POST['task_description']);
-    $due_date = $_POST['due_date'];
-    $status = 'pending'; // Default status
+    // Validate and sanitize input
+    $task_name = filter_input(INPUT_POST, 'task_name', FILTER_SANITIZE_STRING);
+    $task_description = filter_input(INPUT_POST, 'task_description', FILTER_SANITIZE_STRING);
+    $due_date = filter_input(INPUT_POST, 'due_date', FILTER_SANITIZE_STRING);
 
-    // Insert task into task table
-    $stmt_insert = $pdo->prepare("INSERT INTO task (task_name, task_description, due_date, status) VALUES (:task_name, :task_description, :due_date, :status)");
-    $stmt_insert->execute([
-        'task_name' => $task_name,
-        'task_description' => $task_description,
-        'due_date' => $due_date,
-        'status' => $status
-    ]);
+    if ($task_name && $task_description && $due_date) {
+        $status = 'pending'; // Default status
 
-    // Insert activity log for admin
-    $activity_description = "Admin created a new task: $task_name";
-    $stmt_activity = $pdo->prepare("INSERT INTO activity (name, activity_description, date, type) VALUES ('admin', :activity_description, NOW(), 'task')");
-    $stmt_activity->execute([
-        'activity_description' => $activity_description
-    ]);
+        try {
+            // Start transaction
+            $conn->begin_transaction();
 
-    header("Location: gen_task.php?success=1"); // Redirect to avoid resubmission
+            // Insert task into task table
+            $stmt_insert = $conn->prepare("INSERT INTO task (task_name, task_description, due_date, status) VALUES (?, ?, ?, ?)");
+            $stmt_insert->bind_param("ssss", $task_name, $task_description, $due_date, $status);
+            $stmt_insert->execute();
+
+            // Insert activity log for admin
+            $activity_description = "Admin created a new task: " . $task_name;
+            $stmt_activity = $conn->prepare("INSERT INTO activity (name, activity_description, date, type) VALUES ('admin', ?, NOW(), 'task')");
+            $stmt_activity->bind_param("s", $activity_description);
+            $stmt_activity->execute();
+
+            // Commit transaction
+            $conn->commit();
+
+            header("Location: gen_task.php?success=1");
+            exit;
+        } catch (mysqli_sql_exception $e) {
+            // Rollback transaction on error
+            $conn->rollback();
+            $error = "Error: " . $e->getMessage();
+        }
+    } else {
+        $error = "Please fill in all required fields.";
+    }
 }
 
 // Fetch tasks
-$stmt_tasks = $pdo->prepare("SELECT id, task_name, task_description, due_date, status, created_at FROM task");
-$stmt_tasks->execute();
-$tasks = $stmt_tasks->fetchAll(PDO::FETCH_ASSOC);
+try {
+    $stmt_tasks = $conn->prepare("SELECT id, task_name, task_description, due_date, status, created_at FROM task ORDER BY created_at DESC");
+    $stmt_tasks->execute();
+    $tasks = $stmt_tasks->get_result()->fetch_all(MYSQLI_ASSOC);
+} catch (mysqli_sql_exception $e) {
+    $error = "Error fetching tasks: " . $e->getMessage();
+}
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">

@@ -10,27 +10,31 @@ if (!isset($_SESSION['admin_id'])) {
 }
 
 // Database connection
-include 'db.php';
+include 'config.php'; // Replace with your mysqli connection
 
 // Handle module creation
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['create_module'])) {
     $module_name = htmlspecialchars($_POST['module_name']);
 
-    $stmt_create_module = $pdo->prepare("INSERT INTO modules (name, total_topics, progress) VALUES (:name, 0, 0)");
-    $stmt_create_module->execute(['name' => $module_name]);
+    $stmt_create_module = $conn->prepare("INSERT INTO modules (name, total_topics, progress) VALUES (?, 0, 0)");
+    $stmt_create_module->bind_param("s", $module_name);
+    $stmt_create_module->execute();
 
     // Log the activity
-    $stmt_log = $pdo->prepare("INSERT INTO activity (name, activity_description, date, type, additional_data) VALUES ('admin', 'Created module: $module_name', NOW(), 'create', '')");
+    $activity_description = "Created module: $module_name";
+    $stmt_log = $conn->prepare("INSERT INTO activity (name, activity_description, date, type, additional_data) VALUES ('admin', ?, NOW(), 'create', '')");
+    $stmt_log->bind_param("s", $activity_description);
     $stmt_log->execute();
 }
 
 // Function to update module progress
-function updateModuleProgress($pdo, $module_id)
+function updateModuleProgress($conn, $module_id)
 {
     // Count total topics
-    $stmt_count = $pdo->prepare("SELECT COUNT(*) as total_topics, SUM(status = 'complete') as completed_topics FROM topics WHERE module_id = :module_id");
-    $stmt_count->execute(['module_id' => $module_id]);
-    $result = $stmt_count->fetch(PDO::FETCH_ASSOC);
+    $stmt_count = $conn->prepare("SELECT COUNT(*) as total_topics, SUM(status = 'complete') as completed_topics FROM topics WHERE module_id = ?");
+    $stmt_count->bind_param("i", $module_id);
+    $stmt_count->execute();
+    $result = $stmt_count->get_result()->fetch_assoc();
 
     // Log the results for debugging
     error_log("Module ID: $module_id, Total Topics: " . $result['total_topics'] . ", Completed Topics: " . $result['completed_topics']);
@@ -42,8 +46,9 @@ function updateModuleProgress($pdo, $module_id)
     $progress = $total_topics > 0 ? ($completed_topics / $total_topics) * 100 : 0;
 
     // Update module progress in the database
-    $stmt_update_progress = $pdo->prepare("UPDATE modules SET total_topics = :total_topics, progress = :progress WHERE id = :module_id");
-    $stmt_update_progress->execute(['total_topics' => $total_topics, 'progress' => $progress, 'module_id' => $module_id]);
+    $stmt_update_progress = $conn->prepare("UPDATE modules SET total_topics = ?, progress = ? WHERE id = ?");
+    $stmt_update_progress->bind_param("idi", $total_topics, $progress, $module_id);
+    $stmt_update_progress->execute();
 }
 
 // Handle topic addition
@@ -52,14 +57,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_topic'])) {
     $topic_name = htmlspecialchars($_POST['topic_name']);
     $status = htmlspecialchars($_POST['status']);
 
-    $stmt_add_topic = $pdo->prepare("INSERT INTO topics (module_id, topic_name, status) VALUES (:module_id, :topic_name, :status)");
-    $stmt_add_topic->execute(['module_id' => $module_id, 'topic_name' => $topic_name, 'status' => $status]);
+    $stmt_add_topic = $conn->prepare("INSERT INTO topics (module_id, topic_name, status) VALUES (?, ?, ?)");
+    $stmt_add_topic->bind_param("iss", $module_id, $topic_name, $status);
+    $stmt_add_topic->execute();
 
     // Update module progress after adding the topic
-    updateModuleProgress($pdo, $module_id);
+    updateModuleProgress($conn, $module_id);
 
     // Log the activity
-    $stmt_log = $pdo->prepare("INSERT INTO activity (name, activity_description, date, type, additional_data) VALUES ('admin', 'Added topic: $topic_name to module ID: $module_id', NOW(), 'create', '')");
+    $activity_description = "Added topic: $topic_name to module ID: $module_id";
+    $stmt_log = $conn->prepare("INSERT INTO activity (name, activity_description, date, type, additional_data) VALUES ('admin', ?, NOW(), 'create', '')");
+    $stmt_log->bind_param("s", $activity_description);
     $stmt_log->execute();
 }
 
@@ -68,22 +76,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_topic'])) {
     $topic_id = htmlspecialchars($_POST['topic_id']);
 
     // Fetch the module_id before deleting the topic
-    $stmt_get_module_id = $pdo->prepare("SELECT module_id FROM topics WHERE id = :topic_id");
-    $stmt_get_module_id->execute(['topic_id' => $topic_id]);
-    $topic = $stmt_get_module_id->fetch(PDO::FETCH_ASSOC);
+    $stmt_get_module_id = $conn->prepare("SELECT module_id FROM topics WHERE id = ?");
+    $stmt_get_module_id->bind_param("i", $topic_id);
+    $stmt_get_module_id->execute();
+    $result = $stmt_get_module_id->get_result();
+    $topic = $result->fetch_assoc();
 
     if ($topic) {
         $module_id = $topic['module_id'];
 
         // Now proceed to delete the topic
-        $stmt_delete_topic = $pdo->prepare("DELETE FROM topics WHERE id = :topic_id");
-        $stmt_delete_topic->execute(['topic_id' => $topic_id]);
+        $stmt_delete_topic = $conn->prepare("DELETE FROM topics WHERE id = ?");
+        $stmt_delete_topic->bind_param("i", $topic_id);
+        $stmt_delete_topic->execute();
 
         // Update module progress after deleting the topic
-        updateModuleProgress($pdo, $module_id);
+        updateModuleProgress($conn, $module_id);
 
         // Log the activity
-        $stmt_log = $pdo->prepare("INSERT INTO activity (name, activity_description, date, type, additional_data) VALUES ('admin', 'Deleted topic ID: $topic_id from module ID: $module_id', NOW(), 'delete', '')");
+        $activity_description = "Deleted topic ID: $topic_id from module ID: $module_id";
+        $stmt_log = $conn->prepare("INSERT INTO activity (name, activity_description, date, type, additional_data) VALUES ('admin', ?, NOW(), 'delete', '')");
+        $stmt_log->bind_param("s", $activity_description);
         $stmt_log->execute();
     } else {
         error_log("Topic ID $topic_id not found.");
@@ -96,21 +109,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['topic_id']) && isset($
     $status = htmlspecialchars($_POST['status']);
     $module_id = htmlspecialchars($_POST['module_id']);
 
-    $stmt_update_topic = $pdo->prepare("UPDATE topics SET status = :status WHERE id = :topic_id");
-    $stmt_update_topic->execute(['status' => $status, 'topic_id' => $topic_id]);
+    $stmt_update_topic = $conn->prepare("UPDATE topics SET status = ? WHERE id = ?");
+    $stmt_update_topic->bind_param("si", $status, $topic_id);
+    $stmt_update_topic->execute();
 
     // Update module progress after updating the topic status
-    updateModuleProgress($pdo, $module_id);
+    updateModuleProgress($conn, $module_id);
 
     // Log the activity
-    $stmt_log = $pdo->prepare("INSERT INTO activity (name, activity_description, date, type, additional_data) VALUES ('admin', 'Updated status of topic ID: $topic_id to $status', NOW(), 'update', '')");
+    $activity_description = "Updated status of topic ID: $topic_id to $status";
+    $stmt_log = $conn->prepare("INSERT INTO activity (name, activity_description, date, type, additional_data) VALUES ('admin', ?, NOW(), 'update', '')");
+    $stmt_log->bind_param("s", $activity_description);
     $stmt_log->execute();
 }
 
 // Fetch existing modules
-$stmt_modules = $pdo->query("SELECT * FROM modules");
-$modules = $stmt_modules->fetchAll(PDO::FETCH_ASSOC);
+$stmt_modules = $conn->query("SELECT * FROM modules");
+$modules = $stmt_modules->fetch_all(MYSQLI_ASSOC);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -254,11 +271,10 @@ $modules = $stmt_modules->fetchAll(PDO::FETCH_ASSOC);
 </head>
 
 <body>
-
     <header>
         <nav>
             <ul>
-                <li> <a href="admin.php">Back to Admin Dashboard</a></li>
+                <li><a href="admin.php">Back to Admin Dashboard</a></li>
             </ul>
         </nav>
     </header>
@@ -272,20 +288,14 @@ $modules = $stmt_modules->fetchAll(PDO::FETCH_ASSOC);
 
     <h2>Existing Modules</h2>
     <div id="modules">
-        <?php
-        // Fetching modules in descending order
-        $stmt_modules = $pdo->query("SELECT * FROM modules ORDER BY id DESC"); // Make sure to add 'created_at' in your modules table
-        $modules = $stmt_modules->fetchAll(PDO::FETCH_ASSOC);
-
-        foreach ($modules as $module): ?>
+        <?php foreach ($modules as $module): ?>
             <div class="module-container">
                 <h3><?php echo htmlspecialchars($module['name']); ?></h3>
-                <p><?php echo htmlspecialchars($module['created_at']); ?></p>
-                <p>Total Topics: <?php echo htmlspecialchars($module['total_topics']); ?>, Progress:
-                    <?php echo htmlspecialchars($module['progress']); ?>%</p>
-                <button
-                    onclick="document.getElementById('add-topic-<?php echo $module['id']; ?>').style.display='block'">Add
-                    Topic</button>
+                <p>Created at: <?php echo htmlspecialchars($module['created_at']); ?></p>
+                <p>Total Topics: <?php echo htmlspecialchars($module['total_topics']); ?>, Progress: <?php echo htmlspecialchars($module['progress']); ?>%</p>
+
+                <button onclick="document.getElementById('add-topic-<?php echo $module['id']; ?>').style.display='block'">Add Topic</button>
+
                 <div id="add-topic-<?php echo $module['id']; ?>" style="display:none;">
                     <form method="POST">
                         <input type="hidden" name="module_id" value="<?php echo $module['id']; ?>">
@@ -309,11 +319,13 @@ $modules = $stmt_modules->fetchAll(PDO::FETCH_ASSOC);
                     </thead>
                     <tbody>
                         <?php
-                        // Fetch and display topics for the current module in descending order
-                        $stmt_topics = $pdo->prepare("SELECT * FROM topics WHERE module_id = :module_id");
-                        $stmt_topics->execute(['module_id' => $module['id']]);
-                        $topics = $stmt_topics->fetchAll(PDO::FETCH_ASSOC);
-                        foreach ($topics as $topic): ?>
+                        // Fetch topics for the current module
+                        $stmt_topics = $conn->prepare("SELECT * FROM topics WHERE module_id = ?");
+                        $stmt_topics->bind_param("i", $module['id']);
+                        $stmt_topics->execute();
+                        $result_topics = $stmt_topics->get_result();
+
+                        while ($topic = $result_topics->fetch_assoc()): ?>
                             <tr class="topic-container">
                                 <td><?php echo htmlspecialchars($topic['topic_name']); ?></td>
                                 <td>
@@ -329,12 +341,11 @@ $modules = $stmt_modules->fetchAll(PDO::FETCH_ASSOC);
                                 <td>
                                     <form method="POST" style="display:inline;">
                                         <input type="hidden" name="topic_id" value="<?php echo $topic['id']; ?>">
-                                        <input type="hidden" name="module_id" value="<?php echo $module['id']; ?>">
-                                        <button type="submit" name="delete_topic">Delete</button>
+                                        <button type="submit" name="delete_topic" class="delete-button">Delete</button>
                                     </form>
                                 </td>
                             </tr>
-                        <?php endforeach; ?>
+                        <?php endwhile; ?>
                     </tbody>
                 </table>
             </div>

@@ -10,15 +10,24 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-include 'db.php';
+include 'config.php';
 
 $user_id = $_SESSION['user_id'];
 
 // Fetch notifications for the logged-in user
-$stmt = $pdo->prepare("SELECT * FROM notifications ORDER BY created_at DESC");
-// $stmt->bindParam(':id', $id);
-$stmt->execute();
-$notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$sql = "SELECT * FROM notifications ORDER BY created_at DESC";
+$result = $conn->query($sql);
+
+if ($result) {
+    $notifications = $result->fetch_all(MYSQLI_ASSOC);
+} else {
+    // Handle query error
+    echo "Error: " . $conn->error;
+    $notifications = [];
+}
+
+// Close the connection
+$conn->close();
 ?>
 
 <!DOCTYPE html>

@@ -1,6 +1,11 @@
 <?php
 session_start();
-include 'db.php'; // Include your database connection
+
+// error_reporting(E_ALL); // Report all PHP errors
+// ini_set('display_errors', 1); // Display errors on the page
+
+
+include 'config.php'; // Include your database connection
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -8,44 +13,58 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Create a new MySQLi connection
+// $conn = new mysqli($db_host, $db_username, $db_password, $db_name);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
 // Handle the import data request
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_SESSION['user_email']; // Get the logged-in user's email from session
 
     // Fetch data from reg_stud based on the user's email
-    $fetchStmt = $pdo->prepare("SELECT college_name, semester, year, father_name FROM reg_stud WHERE email = :email");
-    $fetchStmt->bindParam(':email', $email);
+    $fetchStmt = $conn->prepare("SELECT college_name, semester, year, father_name FROM reg_stud WHERE email = ?");
+    $fetchStmt->bind_param("s", $email);
     $fetchStmt->execute();
+    $result = $fetchStmt->get_result();
 
-    if ($fetchStmt->rowCount() > 0) {
-        $data = $fetchStmt->fetch(PDO::FETCH_ASSOC);
+    if ($result->num_rows > 0) {
+        $data = $result->fetch_assoc();
+        $college_name = $data['college_name'];
+        $semester = $data['semester'];
+        $year = $data['year'];
+        $father_name = $data['father_name'];
 
         // Prepare to update the user table with the fetched data
-        $updateStmt = $pdo->prepare("UPDATE users SET college_name = :college_name, semester = :semester, year = :year, father_name = :father_name WHERE email = :email");
+        $updateStmt = $conn->prepare("UPDATE users SET college_name = ?, semester = ?, year = ?, father_name = ? WHERE email = ?");
+        $updateStmt->bind_param("sssss", $college_name, $semester, $year, $father_name, $email);
 
-        // Bind parameters
-        $updateStmt->bindParam(':college_name', $data['college_name']);
-        $updateStmt->bindParam(':semester', $data['semester']);
-        $updateStmt->bindParam(':year', $data['year']);
-        $updateStmt->bindParam(':father_name', $data['father_name']);
-        $updateStmt->bindParam(':email', $email);
-
-        // Execute the update
         if ($updateStmt->execute()) {
-            // Log the import activity
-            $activityStmt = $pdo->prepare("INSERT INTO activity (name, activity_description, date, type) VALUES (:name, :activity_description, NOW(), 'import')");
-            $activityDescription = "Imported data from registration";
-            $activityStmt->bindParam(':name', $_SESSION['user_name']); // Assuming you store user name in session
-            $activityStmt->bindParam(':activity_description', $activityDescription);
-            $activityStmt->execute();
+            if ($updateStmt->affected_rows > 0) {
+                // Log the import activity
+                $activityStmt = $conn->prepare("INSERT INTO activity (name, activity_description, date, type) VALUES (?, ?, NOW(), 'import')");
+                $activityDescription = "Imported data from registration";
+                $activityStmt->bind_param("ss", $_SESSION['user_name'], $activityDescription);
+                $activityStmt->execute();
 
-            echo json_encode(['success' => true, 'message' => 'Data imported successfully']);
-            header('Location: settings.php');
+                echo json_encode(['success' => true, 'message' => 'Data imported successfully']);
+                header('Location: settings.php');
+            } else {
+                echo json_encode(['success' => false, 'message' => 'No changes were made. Data might be already up to date.']);
+            }
         } else {
-            echo json_encode(['success' => false, 'message' => 'Error updating user data.']);
+            echo json_encode(['success' => false, 'message' => 'Error updating user data: ' . $conn->error]);
         }
     } else {
         echo json_encode(['success' => false, 'message' => 'No data found in registration table.']);
     }
+
+    $fetchStmt->close();
+    $updateStmt->close();
+    $conn->close();
+
     exit; // End the script after handling the request
 }

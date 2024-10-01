@@ -10,68 +10,84 @@ if (!isset($_SESSION['admin_id'])) {
 }
 
 // Database connection
-include 'db.php'; // Include your database connection file
+include 'config.php'; // Include your database connection file
 
 // Function to log actions
-function logAction($pdo, $action)
+function logAction($conn, $action)
 {
     $admin_id = $_SESSION['admin_id']; // Assuming the admin ID is stored in the session
     $activity_description = "Admin $action.";
-    $stmt_log = $pdo->prepare("INSERT INTO activity (name, activity_description, date, type) VALUES ('admin', :activity_description, NOW(), 'action')");
-    $stmt_log->execute(['activity_description' => $activity_description]);
+    $query_log = "INSERT INTO activity (name, activity_description, date, type) VALUES ('admin', '$activity_description', NOW(), 'action')";
+
+    if (!mysqli_query($conn, $query_log)) {
+        echo "Error logging action: " . mysqli_error($conn);
+    }
 }
 
 // Handle adding a new notification
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_notification'])) {
     $notification_text = htmlspecialchars($_POST['notification_text']);
 
-    $stmt_add = $pdo->prepare("INSERT INTO notifications (notification_text) VALUES (:notification_text)");
-    if ($stmt_add->execute(['notification_text' => $notification_text])) {
-        logAction($pdo, "added notification: $notification_text");
+    $query_add = "INSERT INTO notifications (notification_text) VALUES ('$notification_text')";
+
+    if (mysqli_query($conn, $query_add)) {
+        logAction($conn, "added notification: $notification_text");
         header("Location: addnotifications.php");
+        exit;
     } else {
-        echo "Error adding notification!";
+        echo "Error adding notification: " . mysqli_error($conn);
     }
-    exit;
 }
 
 // Handle marking a notification as read
 if (isset($_GET['mark_read'])) {
     $notification_id = intval($_GET['mark_read']);
 
-    $stmt_update = $pdo->prepare("UPDATE notifications SET is_read = 1 WHERE id = :id");
-    if ($stmt_update->execute(['id' => $notification_id])) {
-        logAction($pdo, "marked notification ID $notification_id as read");
+    $query_update = "UPDATE notifications SET is_read = 1 WHERE id = $notification_id";
+
+    if (mysqli_query($conn, $query_update)) {
+        logAction($conn, "marked notification ID $notification_id as read");
         header("Location: addnotifications.php");
+        exit;
     } else {
-        echo "Error marking notification as read!";
+        echo "Error marking notification as read: " . mysqli_error($conn);
     }
-    exit;
 }
 
 // Handle deleting a notification
 if (isset($_GET['delete'])) {
     $notification_id = intval($_GET['delete']);
 
-    $stmt_delete = $pdo->prepare("DELETE FROM notifications WHERE id = :id");
-    if ($stmt_delete->execute(['id' => $notification_id])) {
-        logAction($pdo, "deleted notification ID $notification_id");
+    $query_delete = "DELETE FROM notifications WHERE id = $notification_id";
+
+    if (mysqli_query($conn, $query_delete)) {
+        logAction($conn, "deleted notification ID $notification_id");
         header("Location: addnotifications.php");
+        exit;
     } else {
-        echo "Error deleting notification!";
+        echo "Error deleting notification: " . mysqli_error($conn);
     }
-    exit;
 }
 
 // Fetch all notifications
-$stmt_notifications = $pdo->prepare("SELECT * FROM notifications ORDER BY created_at DESC");
-$stmt_notifications->execute();
-$notifications = $stmt_notifications->fetchAll(PDO::FETCH_ASSOC);
+$query_notifications = "SELECT * FROM notifications ORDER BY created_at DESC";
+$result_notifications = mysqli_query($conn, $query_notifications);
+
+if (!$result_notifications) {
+    die("Error fetching notifications: " . mysqli_error($conn));
+}
+
+$notifications = mysqli_fetch_all($result_notifications, MYSQLI_ASSOC);
 
 // Fetch logs
-$stmt_logs = $pdo->prepare("SELECT * FROM activity ORDER BY date DESC");
-$stmt_logs->execute();
-$logs = $stmt_logs->fetchAll(PDO::FETCH_ASSOC);
+$query_logs = "SELECT * FROM activity ORDER BY date DESC";
+$result_logs = mysqli_query($conn, $query_logs);
+
+if (!$result_logs) {
+    die("Error fetching logs: " . mysqli_error($conn));
+}
+
+$logs = mysqli_fetch_all($result_logs, MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -201,7 +217,6 @@ $logs = $stmt_logs->fetchAll(PDO::FETCH_ASSOC);
             font-size: 14px;
             color: #666;
         }
-
     </style>
 </head>
 

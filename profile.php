@@ -11,15 +11,17 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Database connection
-include 'db.php'; // Include your database connection file
+include 'config.php'; // Ensure this path is correct
 
 // Get user data from session
 $user_id = $_SESSION['user_id'];
 
 // Fetch user information (optional, if needed)
-$stmt = $pdo->prepare("SELECT name, email FROM users WHERE id = :user_id");
-$stmt->execute(['user_id' => $user_id]);
-$user = $stmt->fetch();
+$stmt = $conn->prepare("SELECT name, email FROM users WHERE id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
 
 // Initialize data arrays
 $classes = [];
@@ -29,45 +31,49 @@ $notifications = [];
 $progress = [];
 
 // Check for class schedule
-$tableExists = $pdo->query("SHOW TABLES LIKE 'class_schedules'")->rowCount() > 0;
+$tableExists = $conn->query("SHOW TABLES LIKE 'class_schedules'")->num_rows > 0;
 if ($tableExists) {
-    $stmt_classes = $pdo->prepare("SELECT class_name, schedule_date, time FROM class_schedules ORDER BY id DESC");
+    $stmt_classes = $conn->prepare("SELECT class_name, schedule_date, time FROM class_schedules ORDER BY id DESC");
     $stmt_classes->execute();
-    $classes = $stmt_classes->fetchAll(PDO::FETCH_ASSOC);
+    $result_classes = $stmt_classes->get_result();
+    $classes = $result_classes->fetch_all(MYSQLI_ASSOC);
 }
 
 // Check for tasks
-$tableExists = $pdo->query("SHOW TABLES LIKE 'task'")->rowCount() > 0;
+$tableExists = $conn->query("SHOW TABLES LIKE 'task'")->num_rows > 0;
 if ($tableExists) {
-    $stmt_tasks = $pdo->prepare("SELECT id, task_name, due_date FROM task ORDER BY id DESC ");
+    $stmt_tasks = $conn->prepare("SELECT id, task_name, due_date FROM task ORDER BY id DESC");
     $stmt_tasks->execute();
-    $tasks = $stmt_tasks->fetchAll(PDO::FETCH_ASSOC);
+    $result_tasks = $stmt_tasks->get_result();
+    $tasks = $result_tasks->fetch_all(MYSQLI_ASSOC);
 }
 
 // Check for recent activities
-$tableExists = $pdo->query("SHOW TABLES LIKE 'activity'")->rowCount() > 0;
+$tableExists = $conn->query("SHOW TABLES LIKE 'activity'")->num_rows > 0;
 if ($tableExists) {
-    $stmt_activities = $pdo->prepare("SELECT activity_description, date FROM activity ORDER BY date DESC");
+    $stmt_activities = $conn->prepare("SELECT activity_description, date FROM activity ORDER BY date DESC");
     $stmt_activities->execute();
-    $activities = $stmt_activities->fetchAll(PDO::FETCH_ASSOC);
+    $result_activities = $stmt_activities->get_result();
+    $activities = $result_activities->fetch_all(MYSQLI_ASSOC);
 }
 
 // Check for notifications
-$tableExists = $pdo->query("SHOW TABLES LIKE 'notifications'")->rowCount() > 0;
+$tableExists = $conn->query("SHOW TABLES LIKE 'notifications'")->num_rows > 0;
 if ($tableExists) {
-    $stmt_notifications = $pdo->prepare("SELECT notification_text, created_at FROM notifications ORDER BY created_at DESC");
+    $stmt_notifications = $conn->prepare("SELECT notification_text, created_at FROM notifications ORDER BY created_at DESC");
     $stmt_notifications->execute();
-    $notifications = $stmt_notifications->fetchAll(PDO::FETCH_ASSOC);
+    $result_notifications = $stmt_notifications->get_result();
+    $notifications = $result_notifications->fetch_all(MYSQLI_ASSOC);
 }
 
 // Check for progress tracker data
-$tableExists = $pdo->query("SHOW TABLES LIKE 'modules'")->rowCount() > 0;
+$tableExists = $conn->query("SHOW TABLES LIKE 'modules'")->num_rows > 0;
 if ($tableExists) {
-    $stmt_progress = $pdo->prepare("SELECT name, progress FROM modules ORDER BY id DESC");
+    $stmt_progress = $conn->prepare("SELECT name, progress FROM modules ORDER BY id DESC");
     $stmt_progress->execute();
-    $progress = $stmt_progress->fetchAll(PDO::FETCH_ASSOC);
+    $result_progress = $stmt_progress->get_result();
+    $progress = $result_progress->fetch_all(MYSQLI_ASSOC);
 }
-
 
 function getActivityColor($activity_description)
 {
@@ -80,15 +86,17 @@ function getActivityColor($activity_description)
     } elseif (stripos($activity_description, 'changed') !== false) {
         return 'orange'; // Color for changed activities
     } elseif (stripos($activity_description, 'created') !== false) {
-        return 'green'; // Color for changed activities
+        return 'green'; // Color for created activities
     } else {
         return 'black'; // Default color
     }
 }
 
-
-
+// Close the statement and connection if necessary
+$stmt->close();
+$conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -224,7 +232,7 @@ function getActivityColor($activity_description)
                 <hr>
                 <ul>
                     <li><a href="https://sumit7739.github.io/Webdev/" target="_blank">Webdev Documentation</a></li>
-                    
+
                 </ul>
             </div>
         </div>

@@ -10,7 +10,7 @@ if (!isset($_SESSION['admin_id'])) {
 }
 
 // Include database connection
-require 'db.php'; // Assuming your database connection file is 'db.php'
+require 'config.php'; // Assuming your database connection file is 'db.php'
 
 // Handle task status update
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_task'])) {
@@ -18,16 +18,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_task'])) {
     $status = $_POST['status'];
 
     // Update task status in the database
-    $stmt_update = $pdo->prepare("UPDATE task SET status = :status WHERE id = :task_id");
-    $stmt_update->execute([
-        'status' => $status,
-        'task_id' => $task_id
-    ]);
+    $stmt_update = mysqli_prepare($conn, "UPDATE task SET status = ? WHERE id = ?");
+    mysqli_stmt_bind_param($stmt_update, "si", $status, $task_id);
+    mysqli_stmt_execute($stmt_update);
 
     // Log activity for status change
     $activity_description = "Admin Updated task ID $task_id status to '$status'.";
-    $stmt_log = $pdo->prepare("INSERT INTO activity (name, activity_description, date, type) VALUES ('admin', :activity_description, NOW(), 'status change')");
-    $stmt_log->execute(['activity_description' => $activity_description]);
+    $stmt_log = mysqli_prepare($conn, "INSERT INTO activity (name, activity_description, date, type) VALUES ('admin', ?, NOW(), 'status change')");
+    mysqli_stmt_bind_param($stmt_log, "s", $activity_description);
+    mysqli_stmt_execute($stmt_log);
 
     header("Location: edit_task.php?success=1"); // Redirect to avoid form resubmission
     exit;
@@ -38,24 +37,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_task'])) {
     $task_id = $_POST['task_id'];
 
     // Delete task from the database
-    $stmt_delete = $pdo->prepare("DELETE FROM task WHERE id = :task_id");
-    $stmt_delete->execute(['task_id' => $task_id]);
+    $stmt_delete = mysqli_prepare($conn, "DELETE FROM task WHERE id = ?");
+    mysqli_stmt_bind_param($stmt_delete, "i", $task_id);
+    mysqli_stmt_execute($stmt_delete);
 
     // Log activity for task deletion
     $activity_description = "Admin Deleted task ID $task_id.";
-    $stmt_log = $pdo->prepare("INSERT INTO activity (name, activity_description, date, type) VALUES ('admin', :activity_description, NOW(), 'deletion')");
-    $stmt_log->execute(['activity_description' => $activity_description]);
+    $stmt_log = mysqli_prepare($conn, "INSERT INTO activity (name, activity_description, date, type) VALUES ('admin', ?, NOW(), 'deletion')");
+    mysqli_stmt_bind_param($stmt_log, "s", $activity_description);
+    mysqli_stmt_execute($stmt_log);
 
     header("Location: edit_task.php?success=1"); // Redirect to avoid form resubmission
     exit;
 }
 
 // Fetch all tasks
-$stmt_tasks = $pdo->prepare("SELECT id, task_name, task_description, due_date, status, created_at FROM task ORDER BY created_at DESC");
-$stmt_tasks->execute();
-$tasks = $stmt_tasks->fetchAll(PDO::FETCH_ASSOC);
+$stmt_tasks = mysqli_prepare($conn, "SELECT id, task_name, task_description, due_date, status, created_at FROM task ORDER BY created_at DESC");
+mysqli_stmt_execute($stmt_tasks);
+$result = mysqli_stmt_get_result($stmt_tasks);
+$tasks = mysqli_fetch_all($result, MYSQLI_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 

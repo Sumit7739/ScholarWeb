@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'db.php'; // Include your database connection
+include 'config.php'; // Include your database connection
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -16,11 +16,12 @@ $user = [];
 
 // Fetch user data from the user table
 try {
-    $userStmt = $pdo->prepare("SELECT * FROM users WHERE id = :id");
-    $userStmt->bindParam(':id', $userId);
+    $userStmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
+    $userStmt->bind_param("i", $userId); // "i" means integer
     $userStmt->execute();
-    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
+    $result = $userStmt->get_result();
+    $user = $result->fetch_assoc(); // Fetch the user data as an associative array
+} catch (mysqli_sql_exception $e) {
     $error = "Error fetching user data: " . $e->getMessage();
 }
 
@@ -37,31 +38,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
 
     // Check if the keys exist in the $_POST array
-    $name = isset($_POST['name']) ? $_POST['name'] : $previousValues['name'];
-    $email = isset($_POST['email']) ? $_POST['email'] : $previousValues['email'];
-    $phone = isset($_POST['phone']) ? $_POST['phone'] : $previousValues['phone'];
-    $semester = isset($_POST['semester']) ? $_POST['semester'] : $previousValues['semester'];
-    $college_name = isset($_POST['college_name']) ? $_POST['college_name'] : $previousValues['college_name'];
-    $year = isset($_POST['year']) ? $_POST['year'] : $previousValues['year'];
-    $password = isset($_POST['password']) ? $_POST['password'] : '';
+    $name = $_POST['name'] ?? $previousValues['name'];
+    $email = $_POST['email'] ?? $previousValues['email'];
+    $phone = $_POST['phone'] ?? $previousValues['phone'];
+    $semester = $_POST['semester'] ?? $previousValues['semester'];
+    $college_name = $_POST['college_name'] ?? $previousValues['college_name'];
+    $year = $_POST['year'] ?? $previousValues['year'];
+    $password = $_POST['password'] ?? '';
 
     // Prepare the SQL update statement
     try {
-        $updateStmt = $pdo->prepare("UPDATE users SET name = :name, email = :email, phone = :phone, semester = :semester, college_name = :college_name, year = :year" . ($password ? ", password = :password" : "") . " WHERE id = :id");
+        $updateQuery = "UPDATE users SET name = ?, email = ?, phone = ?, semester = ?, college_name = ?, year = ?" . ($password ? ", password = ?" : "") . " WHERE id = ?";
+        $updateStmt = $conn->prepare($updateQuery);
 
         // Bind parameters
-        $updateStmt->bindParam(':name', $name);
-        $updateStmt->bindParam(':email', $email);
-        $updateStmt->bindParam(':phone', $phone);
-        $updateStmt->bindParam(':semester', $semester);
-        $updateStmt->bindParam(':college_name', $college_name);
-        $updateStmt->bindParam(':year', $year);
-        $updateStmt->bindParam(':id', $userId);
-
-        // Hash the password if provided
         if ($password) {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            $updateStmt->bindParam(':password', $hashedPassword);
+            $updateStmt->bind_param("sssssisi", $name, $email, $phone, $semester, $college_name, $year, $hashedPassword, $userId); // Last parameter is the user ID
+        } else {
+            $updateStmt->bind_param("ssssssi", $name, $email, $phone, $semester, $college_name, $year, $userId);
         }
 
         // Execute the update
@@ -77,20 +72,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $changedFieldsStr = implode(', ', $changedFields) ?: 'No changes made';
 
         // Log the activity for updating settings
-        $activityStmt = $pdo->prepare("INSERT INTO activity (name, activity_description, date, type) VALUES (:name, :activity_description, NOW(), 'update')");
-        $activityDescription = "Updated settings ";
-        $activityStmt->bindParam(':name', $user['name']);
-        $activityStmt->bindParam(':activity_description', $activityDescription);
+        $activityStmt = $conn->prepare("INSERT INTO activity (name, activity_description, date, type) VALUES (?, ?, NOW(), 'update')");
+        $activityDescription = "Updated settings for " . $changedFieldsStr;
+        $activityStmt->bind_param("ss", $user['name'], $activityDescription);
         $activityStmt->execute();
 
         // Success message
         $success = "Settings updated successfully.";
         header("Location: settings.php");
         exit;
-    } catch (PDOException $e) {
+    } catch (mysqli_sql_exception $e) {
         // Handle error
         $error = "Error updating settings: " . $e->getMessage();
     }
+}
+
+// Close statements
+$userStmt->close();
+if (isset($updateStmt)) {
+    $updateStmt->close();
+}
+if (isset($activityStmt)) {
+    $activityStmt->close();
 }
 ?>
 
@@ -157,13 +160,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: green;
         }
 
-        #active{
+        #active {
             color: red;
         }
     </style>
 </head>
 
-<body> 
+<body>
     <!-- Header -->
     <header>
         <nav>
@@ -184,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </ul>
         </nav>
     </header>
-<br>
+    <br>
     <div class="container">
         <h2>Settings</h2>
 
@@ -198,22 +201,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <form method="post" action="">
             <label for="name">Name:</label>
-            <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($user['name']); ?>" required>
+            <input type="text" id="name" name="name" value="<?php echo isset($user['name']) ? htmlspecialchars($user['name']) : ''; ?>" required>
 
             <label for="email">Email:</label>
-            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+            <input type="email" id="email" name="email" value="<?php echo isset($user['email']) ? htmlspecialchars($user['email']) : ''; ?>" required>
 
             <label for="phone">Phone No:</label>
-            <input type="text" id="phone" name="phone" value="<?php echo htmlspecialchars($user['phone']); ?>">
+            <input type="text" id="phone" name="phone" value="<?php echo isset($user['phone']) ? htmlspecialchars($user['phone']) : ''; ?>">
 
             <label for="semester">Semester:</label>
-            <input type="text" id="semester" name="semester" value="<?php echo htmlspecialchars($user['semester']); ?>">
+            <input type="text" id="semester" name="semester" value="<?php echo isset($user['semester']) ? htmlspecialchars($user['semester']) : ''; ?>">
 
             <label for="college_name">College Name:</label>
-            <input type="text" id="college_name" name="college_name" value="<?php echo htmlspecialchars($user['college_name']); ?>">
+            <input type="text" id="college_name" name="college_name" value="<?php echo isset($user['college_name']) ? htmlspecialchars($user['college_name']) : ''; ?>">
 
             <label for="year">Year:</label>
-            <input type="text" id="year" name="year" value="<?php echo htmlspecialchars($user['year']); ?>">
+            <input type="text" id="year" name="year" value="<?php echo isset($user['year']) ? htmlspecialchars($user['year']) : ''; ?>">
 
             <label for="password">Change Password:</label>
             <input type="password" id="password" name="password" maxlength="8">
@@ -225,6 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit" name="import_data">Import Data from Registration</button>
         </form>
     </div>
+
 
     <script src="script.js"></script>
 </body>

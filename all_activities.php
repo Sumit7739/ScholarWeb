@@ -10,19 +10,26 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Database connection
-include 'db.php'; // Include your database connection file
+// Include your database connection file
+include 'config.php';
 
 // Get user data from session
 $user_id = $_SESSION['user_id'];
 
-
 // Fetch all activity logs
-$stmt = $pdo->prepare("SELECT * FROM activity ORDER BY date DESC");
-$stmt->execute();
-$activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$sql = "SELECT * FROM activity ORDER BY date DESC";
+$result = $conn->query($sql);
 
+if ($result->num_rows > 0) {
+    $activities = $result->fetch_all(MYSQLI_ASSOC);
+} else {
+    $activities = array();
+}
+
+// Close the connection (optional but good practice)
+$conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -199,12 +206,13 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 margin-left: 10px;
                 /* Adjust spacing for navigation items */
             }
-            footer{
-                width:auto;
+
+            footer {
+                width: auto;
             }
         }
 
-        #active{
+        #active {
             color: red;
         }
     </style>
