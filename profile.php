@@ -48,6 +48,24 @@ if ($tableExists) {
     $tasks = $result_tasks->fetch_all(MYSQLI_ASSOC);
 }
 
+// Fetch the count of new tasks
+$stmt_new_tasks = $conn->prepare("SELECT COUNT(*) as new_count FROM task WHERE is_new = 1");
+$stmt_new_tasks->execute();
+$result_new_tasks = $stmt_new_tasks->get_result();
+$new_task_count = $result_new_tasks->fetch_assoc()['new_count'];
+
+// Fetch the count of new notifications
+$stmt_new_notifications = $conn->prepare("SELECT COUNT(*) as new_count FROM notifications WHERE is_new = 1");
+$stmt_new_notifications->execute();
+$result_new_notifications = $stmt_new_notifications->get_result();
+$new_notification_count = $result_new_notifications->fetch_assoc()['new_count'];
+
+// Fetch the count of new posts
+$stmt_new_posts = $conn->prepare("SELECT COUNT(*) as new_count FROM posts WHERE is_new = 1");
+$stmt_new_posts->execute();
+$result_new_posts = $stmt_new_posts->get_result();
+$new_post_count = $result_new_posts->fetch_assoc()['new_count'];
+
 // Check for recent activities
 $tableExists = $conn->query("SHOW TABLES LIKE 'activity'")->num_rows > 0;
 if ($tableExists) {
@@ -92,6 +110,8 @@ function getActivityColor($activity_description)
     }
 }
 
+
+
 // Close the statement and connection if necessary
 $stmt->close();
 $conn->close();
@@ -108,7 +128,19 @@ $conn->close();
     <title>User Dashboard</title>
     <link rel="stylesheet" href="dashstyles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
+    <style>
+        .badge {
+            position: relative;
+            top: -10px;
+            /* right: -10px; */
+            background: red;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
 
 </head>
 
@@ -123,12 +155,27 @@ $conn->close();
             </div>
             <ul class="menu" id="menu">
                 <li><a href="profile.php"><i class="fa fa-user" id="active"></i>&nbsp; Profile</a></li>
-                <li><a href="feed.php"><i class="fa-solid fa-newspaper"></i>&nbsp; Feed</a></li>
-                <li><a href="all_tasks.php"><i class="fa fa-tasks"></i>&nbsp; Tasks</a></li>
+                <li><a href="feed.php">
+                        <i class="fa-solid fa-newspaper"></i>&nbsp; Feed
+                        <?php if ($new_post_count > 0): ?>
+                            <span class="badge"><?php echo $new_post_count; ?></span>
+                        <?php endif; ?>
+                    </a></li>
+                <li><a href="all_tasks.php">
+                        <i class="fa fa-tasks"></i>&nbsp; Tasks
+                        <?php if ($new_task_count > 0): ?>
+                            <span class="badge"><?php echo $new_task_count; ?></span>
+                        <?php endif; ?>
+                    </a></li>
                 <li><a href="all_homework.php"><i class="fa fa-book"></i>&nbsp; Homework</a></li>
                 <li><a href="all_progress.php"><i class="fa fa-chart-line"></i>&nbsp;Progress</a></li>
                 <li><a href="all_activities.php"><i class="fa fa-clock"></i>&nbsp; Activities</a></li>
-                <li><a href="all_notifications.php"><i class="fa fa-bell"></i>&nbsp; Notifications</a></li>
+                <li><a href="all_notifications.php">
+                        <i class="fa fa-bell"></i>&nbsp; Notifications
+                        <?php if ($new_notification_count > 0): ?>
+                            <span class="badge"><?php echo $new_notification_count; ?></span>
+                        <?php endif; ?>
+                    </a></li>
                 <li><a href="settings.php"><i class="fa fa-cog"></i>&nbsp; Settings</a></li>
                 <li><a href="logout.php" class="btn-logout"><i class="fa fa-sign-out"></i>&nbsp; Logout</a></li>
             </ul>
@@ -268,6 +315,8 @@ $conn->close();
 
     <footer>
         <p>&copy; 2024 ScholarWeb. All Rights Reserved.</p>
+        <br>
+        <p>version 2.1.4 </p>
         <ul class="footer-links">
             <li><a href="contact.php">Contact Support</a></li>
             <li><a href="terms.php">Terms of Service</a></li>
@@ -275,6 +324,24 @@ $conn->close();
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        var newTaskCount = <?php echo $new_task_count; ?>;
+        var newNotificationCount = <?php echo $new_notification_count; ?>;
+        var newPostCount = <?php echo $new_post_count; ?>;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (newTaskCount > 0) {
+                document.querySelector('i.fa-tasks').classList.add('glow');
+            }
+            if (newNotificationCount > 0) {
+                document.querySelector('i.fa-bell').classList.add('glow');
+            }
+            if (newPostCount > 0) {
+                document.querySelector('i.fa-newspaper').classList.add('glow');
+            }
+        });
+    </script>
+
 
 </body>
 

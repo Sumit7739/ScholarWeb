@@ -140,6 +140,19 @@ include 'config.php'; // Database connection
             margin-right: 10px;
             vertical-align: middle;
         }
+
+        .image-upload-label {
+            cursor: pointer;
+            font-size: 1.5em;
+            color: #555;
+            margin-right: 10px;
+        }
+
+        #image-preview {
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 30px;
+        }
     </style>
 </head>
 
@@ -166,15 +179,24 @@ include 'config.php'; // Database connection
         </nav>
     </header>
     <!-- End of Header -->
-
     <div class="feed-container">
         <div class="post-form">
-            <form action="post_feed.php" method="POST">
+            <form action="post_feed.php" method="POST" enctype="multipart/form-data">
                 <textarea name="post_content" placeholder="What's your doubt?" required></textarea>
+
+                <!-- Camera Icon and File Input -->
+                <label for="image-upload" class="image-upload-label">
+                    <i class="fa fa-camera"></i>
+                </label>
+                <input type="file" id="image-upload" name="post_image" accept="image/*" style="display:none;" onchange="showPreview(event);">
+
+                <img id="image-preview" src="" alt="Image Preview" style="display:none; width: 250px; height: auto;" />
+
                 <button type="submit" class="button-17">Post</button>
             </form>
         </div>
     </div>
+
     <div class="feed-posts feed-container">
         <!-- Loop through feed posts here -->
 
@@ -184,9 +206,9 @@ include 'config.php'; // Database connection
             exit;
         }
 
-        $query = "SELECT posts.*, users.name, users.profile_pic FROM posts 
-          JOIN users ON posts.user_id = users.id 
-          ORDER BY post_date DESC";
+        $query = "SELECT posts.*, users.name, users.profile_pic FROM posts
+              JOIN users ON posts.user_id = users.id
+              ORDER BY post_date DESC";
         $result = mysqli_query($conn, $query);
 
         while ($row = mysqli_fetch_assoc($result)) {
@@ -197,38 +219,51 @@ include 'config.php'; // Database connection
             // Define the profile picture path
             $profilePicPath = "uploads/profile_pics/" . $profilePic;
 
+            // Define the post image path (if any)
+            $postImagePath = !empty($row['image']) ? htmlspecialchars($row['image']) : '';
+
             echo "<div class='post'>
-            <div class='post-header'>
-                <img src='" . htmlspecialchars($profilePicPath) . "' alt='Profile Picture' class='profile-pic ' />
-                <strong>{$row['name']}</strong> - <small>{$row['post_date']}</small>
-            </div>
-                    <div class='post-content'>
-                        {$row['content']}
+        <div class='post-header'>
+            <img src='" . htmlspecialchars($profilePicPath) . "' alt='Profile Picture' class='profile-pic ' />
+            <strong>{$row['name']}</strong> - <small>{$row['post_date']}</small>
+        </div>
+                <div class='post-content'>
+                    {$row['content']}
+                </div> <br>";
+
+            // Display post image if it exists
+            if (!empty($postImagePath)) {
+                echo "<div class='post-image'>
+                    <img src='" . $postImagePath . "' alt='Post Image' style='max-width: 60%; height: auto; border-radius:8px;' />
+                  </div>";
+            }
+
+            echo "<div class='post-footer'>
+                    <div>
+                        <span class='icon like-btn' onclick='likePost($post_id)'>&nbsp; 👍</span> $likes_count Likes
+                        <span class='icon reply-btn' onclick='toggleReply($post_id)'>&nbsp; &nbsp; &nbsp; 💬</span>Reply
                     </div>
-                    <div class='post-footer'>
-                        <div>
-                            <span class='icon like-btn' onclick='likePost($post_id)'>&nbsp; 👍</span> $likes_count Likes
-                            <span class='icon reply-btn' onclick='toggleReply($post_id)'>&nbsp; &nbsp; &nbsp; 💬</span>Reply
-                        </div>
-                    </div>
-                    <div class='reply-section' id='reply-section-$post_id' style='display:none;'>
-                        <!-- Display replies here -->
-                        <form action='reply_post.php' method='POST'>
-                            <textarea name='reply_content' placeholder='Write your reply...' required></textarea>
-                            <input type='hidden' name='post_id' value='$post_id'>
-                            <button type='submit' class='button-17'>Reply</button>
-                        </form>";
+                </div>
+                <div class='reply-section' id='reply-section-$post_id' style='display:none;'>
+                    <!-- Display replies here -->
+                    <form action='reply_post.php' method='POST'>
+                        <textarea name='reply_content' placeholder='Write your reply...' required></textarea>
+                        <input type='hidden' name='post_id' value='$post_id'>
+                        <button type='submit' class='button-17'>Reply</button>
+                    </form>";
 
             // Fetch and display replies for each post
-            $reply_query = "SELECT replies.*, users.name FROM replies JOIN users ON replies.user_id = users.id WHERE post_id = $post_id ORDER BY replies.created_at ASC";
+            $reply_query = "SELECT replies.*, users.name FROM replies
+                        JOIN users ON replies.user_id = users.id
+                        WHERE post_id = $post_id ORDER BY replies.created_at ASC";
             $reply_result = mysqli_query($conn, $reply_query);
 
             while ($reply_row = mysqli_fetch_assoc($reply_result)) {
                 echo " <br> <div class='reply'>
-                <img src='" . htmlspecialchars($profilePicPath) . "' alt='Profile Picture' class='profile-pic ' />
-                            <strong>{$reply_row['name']}</strong> - <small>{$reply_row['created_at']}</small><br>
-                            {$reply_row['reply_content']}
-                        </div> <hr> <br>";
+            <img src='" . htmlspecialchars($profilePicPath) . "' alt='Profile Picture' class='profile-pic ' />
+                        <strong>{$reply_row['name']}</strong> - <small>{$reply_row['created_at']}</small><br><br>
+                        {$reply_row['reply_content']}
+                    </div> <hr> <br>";
             }
 
             echo "</div></div>";
@@ -258,7 +293,25 @@ include 'config.php'; // Database connection
                 replySection.style.display = 'none';
             }
         }
+
+        function showPreview(event) {
+            var preview = document.getElementById('image-preview');
+            var file = event.target.files[0];
+
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = "";
+                preview.style.display = 'none';
+            }
+        }
     </script>
+
     <script src="script.js"></script>
 </body>
 
