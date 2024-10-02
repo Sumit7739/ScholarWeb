@@ -17,7 +17,7 @@ include 'config.php'; // Ensure this path is correct
 $user_id = $_SESSION['user_id'];
 
 // Fetch user information (optional, if needed)
-$stmt = $conn->prepare("SELECT name, email FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT name, email, profile_pic FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -141,6 +141,19 @@ $conn->close();
 
             <!-- User Info Section -->
             <div class="dashboard-container">
+                <!-- Profile Picture Display -->
+                <div class="profile-section">
+                    <?php
+                    // Define the upload directory
+                    $uploadDirectory = 'uploads/profile_pics/';
+
+                    // Set a default image if no profile picture exists for the user
+                    $profilePicPath = $uploadDirectory . ($user['profile_pic'] ? $user['profile_pic'] : 'default.png');
+                    ?>
+                    <!-- Display the user's profile picture -->
+                    <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 50%;">
+
+                </div>
                 <h1>Welcome, <?php echo htmlspecialchars($user['name']); ?>!</h1>
                 <p>Your email: <?php echo htmlspecialchars($user['email']); ?></p>
                 <!-- <a href="profile.php" class="btn">Edit Profile</a> -->

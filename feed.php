@@ -131,6 +131,15 @@ include 'config.php'; // Database connection
             font-size: 14px;
             margin-top: 5px;
         }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 
@@ -174,17 +183,25 @@ include 'config.php'; // Database connection
             header("Location: login.html");
             exit;
         }
-        $query = "SELECT posts.*, users.name FROM posts JOIN users ON posts.user_id = users.id ORDER BY post_date DESC";
+
+        $query = "SELECT posts.*, users.name, users.profile_pic FROM posts 
+          JOIN users ON posts.user_id = users.id 
+          ORDER BY post_date DESC";
         $result = mysqli_query($conn, $query);
 
         while ($row = mysqli_fetch_assoc($result)) {
             $post_id = $row['id'];
             $likes_count = $row['likes_count'];
+            $profilePic = $row['profile_pic'] ? $row['profile_pic'] : 'default.png'; // Use default pic if none is set
+
+            // Define the profile picture path
+            $profilePicPath = "uploads/profile_pics/" . $profilePic;
 
             echo "<div class='post'>
-                    <div class='post-header'>
-                        <strong>{$row['name']}</strong> - <small>{$row['post_date']}</small>
-                    </div>
+            <div class='post-header'>
+                <img src='" . htmlspecialchars($profilePicPath) . "' alt='Profile Picture' class='profile-pic ' />
+                <strong>{$row['name']}</strong> - <small>{$row['post_date']}</small>
+            </div>
                     <div class='post-content'>
                         {$row['content']}
                     </div>
@@ -208,6 +225,7 @@ include 'config.php'; // Database connection
 
             while ($reply_row = mysqli_fetch_assoc($reply_result)) {
                 echo " <br> <div class='reply'>
+                <img src='" . htmlspecialchars($profilePicPath) . "' alt='Profile Picture' class='profile-pic ' />
                             <strong>{$reply_row['name']}</strong> - <small>{$reply_row['created_at']}</small><br>
                             {$reply_row['reply_content']}
                         </div> <hr> <br>";

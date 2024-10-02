@@ -151,6 +151,11 @@ if (isset($activityStmt)) {
             background-color: #45a049;
         }
 
+        button a {
+            text-decoration: none;
+            color: white;
+        }
+
         .message {
             color: red;
             text-align: center;
@@ -222,7 +227,9 @@ if (isset($activityStmt)) {
             <input type="password" id="password" name="password" maxlength="8">
 
             <button type="submit">Update Settings</button>
+            <br><br>
         </form>
+        <button><a href="upload_profile_pic.php">Upload Profile Picture</a></button>
 
         <form method="post" action="import_data.php" style="margin-top: 20px;">
             <button type="submit" name="import_data">Import Data from Registration</button>
