@@ -316,10 +316,11 @@ $conn->close();
     <footer>
         <p>&copy; 2024 ScholarWeb. All Rights Reserved.</p>
         <br>
-        <p>version 2.1.4 </p>
+        <p>version 2.1.2 </p>
         <ul class="footer-links">
             <li><a href="contact.php">Contact Support</a></li>
             <li><a href="terms.php">Terms of Service</a></li>
+            <li><a href="view_updates.php">View Updates</a></li>
         </ul>
     </footer>
 

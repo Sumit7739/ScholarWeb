@@ -242,6 +242,7 @@ include 'config.php'; // Database connection
                     <div>
                         <span class='icon like-btn' onclick='likePost($post_id)'>&nbsp; 👍</span> $likes_count Likes
                         <span class='icon reply-btn' onclick='toggleReply($post_id)'>&nbsp; &nbsp; &nbsp; 💬</span>Reply
+                        <span class='icon delete-btn' onclick='deletePost($post_id)'>&nbsp; 🗑️</span> Delete
                     </div>
                 </div>
                 <div class='reply-section' id='reply-section-$post_id' style='display:none;'>
@@ -308,6 +309,14 @@ include 'config.php'; // Database connection
             } else {
                 preview.src = "";
                 preview.style.display = 'none';
+            }
+        }
+
+
+        function deletePost(postId) {
+            if (confirm('Are you sure you want to delete this post?')) {
+                // Send an AJAX request to delete the post
+                window.location.href = `delete_post.php?post_id=${postId}`;
             }
         }
     </script>

@@ -245,6 +245,14 @@ $schedules_count = $conn->query("SELECT COUNT(*) as total FROM class_schedules")
                 <h3>View Payments</h3>
                 <a href="view_payments.php">View Payments</a>
             </div>
+            <div class="card">
+                <h3>Add Updates</h3>
+                <a href="add_updates.php">Add Updates</a>
+            </div>
+            <div class="card">
+                <h3>View Updates</h3>
+                <a href="view_updates.php">View Updates</a>
+            </div>
         </div>
     </div>
 

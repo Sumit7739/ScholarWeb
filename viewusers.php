@@ -20,7 +20,7 @@ if ($conn->connect_error) {
 }
 
 // Step 2: Fetch all users from the users table
-$sql = "SELECT id, name, email, college_name, semester, created_at FROM users";
+$sql = "SELECT id, name, email, college_name, semester, profile_pic, created_at FROM users";
 $result = $conn->query($sql);
 
 ?>
@@ -46,6 +46,12 @@ $result = $conn->query($sql);
             text-align: center;
             margin-top: 20px;
             color: #333;
+        }
+
+        img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
         }
 
         table {
@@ -137,6 +143,7 @@ $result = $conn->query($sql);
     <table>
         <tr>
             <th>ID</th>
+            <th>Profile Image</th>
             <th>Name</th>
             <th>Email</th>
             <th>College</th>
@@ -148,8 +155,13 @@ $result = $conn->query($sql);
         // Step 3: Display data in table format
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
+                // Set the profile picture or a default image
+                $uploadDirectory = 'uploads/profile_pics/';
+                $profilePic = $row['profile_pic'] ? $uploadDirectory . $row['profile_pic'] : $uploadDirectory . 'default.png';
+
                 echo "<tr>
                     <td>" . $row["id"] . "</td>
+                    <td><img src='" . $profilePic . "' alt='Profile Picture'></td>
                     <td>" . $row["name"] . "</td>
                     <td>" . $row["email"] . "</td>
                     <td>" . $row["college_name"] . "</td>
