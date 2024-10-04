@@ -3,6 +3,8 @@
 
 ScholarWeb is a platform designed to help students manage their web development coursework, providing easy access to class notes, tasks, homework, and schedules. Though originally built for web development classes, ScholarWeb can be adapted by any educational institutions or tutoring services to manage their own courses and student activities.
 
+[see the documentation](https://sumit7739.github.io/ScholarWeb_Docs/)
+
 ## Installation
 
 ScholarWeb is best deployed on a web server, making it accessible from anywhere for students and administrators. For hosting or deployment inquiries, including pricing details, please contact us.
