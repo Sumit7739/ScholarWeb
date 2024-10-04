@@ -1,0 +1,35 @@
+{
+    "name": "ScholarWeb",
+    "version": "2.1.2",
+    "author": "Sumit Srivastava",
+    "description": "Desktop Application for ScholarWeb",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "dist": "electron-builder"
+    },
+    "build": {
+        "appId": "com.purr.scholarweb",
+        "productName": "ScholarWeb",
+        "directories": {
+            "output": "dist"
+        },
+        "files": [
+            "build/**/*",
+            "main.js",
+            "assets/**/*"
+        ],
+        "win": {
+            "icon": "assets/icon.ico"
+        },
+        "mac": {
+            "icon": "assets/icon.icns"
+        },
+        "linux": {
+            "icon": "assets/icon.png"
+        }
+    },
+    "devDependencies": {
+        "electron": "^32.1.2"
+    }
+}

@@ -3,7 +3,7 @@
 
 ScholarWeb is a platform designed to help students manage their web development coursework, providing easy access to class notes, tasks, homework, and schedules. Though originally built for web development classes, ScholarWeb can be adapted by any educational institutions or tutoring services to manage their own courses and student activities.
 
-[see the documentation](https://sumit7739.github.io/ScholarWeb_Docs/)
+**[See The Documentation](https://sumit7739.github.io/ScholarWeb_Docs/)**
 
 ## Installation
 
@@ -103,115 +103,8 @@ For questions, feedback, or support, please reach out via email at:
 
 ### Screenshots
 
-Screenshots and images of the ScholarWeb platform are uploaded here.
+Screenshots and images of the ScholarWeb platform are uploaded on the documentation page, You can find the **Link** of it on the Top and one is here.
 
-
-**Landing Page**
-
-![landing page](images/landing.jpeg)
-
-**Login page**
-
-![login page](images/login.jpeg)
-
-**Dashboard Cropped**
-
-![dashboard](images/dashboard.jpeg)
-
-**Profile page Uncropped**
-
-![profile page](images/profile.jpeg)
-
-**All User Pages are Responsive**
-
-**Responsive Profile page** 
-
-![profile responsive](images/profile2.jpeg)
-
-**Feed page**
-
-![feed page](images/feed.jpeg)
-
-**Task page**
-
-![task page](images/alltask.jpeg)
-
-**Homework page**
-
-![homework page](images/homework.jpeg)
-
-**Notification page**
-
-![admin add notification](images/notif.jpeg)
-
-**Progress Page**
-
-![progrss](images/progress.jpeg)
-
-**Settings page**
-
-![settings](images/settings.jpeg)
-
-**Contact Page**
-
-![contact](images/contact.jpeg)
-
----
-
-### Admin Section
-
-**Admin Dashboard**
-
-![admin dashboard](images/admin.jpeg)
-
-**View All Users**
-
-![admin users](images/viewusers.jpeg)
-
-**Admin Generate Tasks**
-
-![admin tasks](images/gentask.jpeg)
-
-
-**Admin Edit Task page**
-
-![admin edit task](images/edittask.jpeg)
-
-
-**Admin Schedules**
-
-![admin schedules](images/schedule.jpeg)
-
-**Admin Messages**
-
-![admin messages](images/usermessage.jpeg)
-
-**Admin Logs**
-
-![admin logs](images/activity.jpeg)
-
-**Admin Homework**
-
-![admin homework](images/homeworksubmission.jpeg)
-
-**Admin Payments**
-
-![admin payments](images/payment.jpeg)
-
-**Admin Updates**
-
-![admin updates](images/appupdates.jpeg)
-
-**Admin Modules**
-
-![admin modules](images/module.jpeg)
-
-**Admin Add User page**
-
-![admin add user](images/adduser.jpeg)
-
-
-
-**There are more pages consisting of different Sub-Features Visit the page to explore**
+**[Documentation](https://sumit7739.github.io/ScholarWeb_Docs/)**
 
 ---
