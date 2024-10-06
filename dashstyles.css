@@ -528,14 +528,6 @@ footer p {
   transform: scale(0.95); /* Slightly shrink the button when pressed */
 }
 
-.homework-container {
-  /* display: flex; */
-  /* justify-content: space-between; */
-  /* align-items: center; */
-  /* text-align: center; */
-  /* margin-bottom: 20px; */
-}
-
 /* CSS */
 .button {
   background-color: #ffffff;
@@ -560,7 +552,7 @@ footer p {
   touch-action: manipulation;
 }
 
-.button-38:hover {
+.button:hover {
   background-color: rgb(249, 250, 251);
 }
 
@@ -590,43 +582,43 @@ footer p {
   }
 
   header nav ul {
-    display: none; /* Hide menu by default */
-    flex-direction: column; /* Stack links vertically */
-    width: 60%; /* Full width for the menu */
+    display: none; 
+    flex-direction: column; 
+    width: 60%; 
     font-size: 18px;
     background-color: #85dfe7;
-    position: absolute; /* Position it absolutely */
-    top: 50px; /* Below the header */
-    right: 0; /* Align to the left */
+    position: absolute; 
+    top: 50px; 
+    right: 0; 
     border-radius: 8px;
-    z-index: 999; /* Make sure it's on top */
-    opacity: 0; /* Start hidden */
-    transform: translateY(-20px); /* Start with a slight upward translation */
-    transition: opacity 0.3s ease, transform 0.3s ease; /* Transition for opacity and transform */
+    z-index: 999; 
+    opacity: 0; 
+    transform: translateY(-20px); 
+    transition: opacity 0.3s ease, transform 0.3s ease; 
   }
 
   header nav ul.show {
-    display: flex; /* Show menu when class 'show' is added */
-    opacity: 1; /* Make it fully visible */
-    transform: translateY(0); /* Move to its original position */
+    display: flex; 
+    opacity: 1; 
+    transform: translateY(0); 
   }
 
   header nav ul li {
-    margin: 10px 0; /* Vertical spacing for items */
-    text-align: center; /* Center text */
-    padding: 10px 10px; /* Add padding for better clickability */
-    position: relative; /* Position relative for pseudo-element */
+    margin: 10px 0; 
+    text-align: center; 
+    padding: 10px 10px; 
+    position: relative; 
   }
   header nav ul li:not(:last-child):after {
-    content: ""; /* Add a separator line */
-    display: block; /* Block level */
-    height: 1px; /* Height of the line */
-    background-color: #fff; /* Color of the line */
-    position: absolute; /* Absolute positioning */
-    left: 0; /* Align to the left */
-    right: 0; /* Align to the right */
-    bottom: 0; /* Position at the bottom */
-    margin: 0; /* Center it */
+    content: ""; 
+    display: block; 
+    height: 1px; 
+    background-color: #fff; 
+    position: absolute; 
+    left: 0; 
+    right: 0; 
+    bottom: 0; 
+    margin: 0; 
   }
 
   header nav ul li a:hover {
@@ -734,6 +726,6 @@ footer p {
   }
 }
 
-#active{
+#active {
   color: rgb(255, 0, 0);
 }

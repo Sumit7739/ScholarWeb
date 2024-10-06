@@ -96,17 +96,17 @@ if ($tableExists) {
 function getActivityColor($activity_description)
 {
     if (stripos($activity_description, 'added') !== false) {
-        return 'green'; // Color for added activities
+        return 'green';
     } elseif (stripos($activity_description, 'updated') !== false) {
-        return 'blue'; // Color for updated activities
+        return 'blue';
     } elseif (stripos($activity_description, 'deleted') !== false) {
-        return 'red'; // Color for deleted activities
+        return 'red';
     } elseif (stripos($activity_description, 'changed') !== false) {
-        return 'orange'; // Color for changed activities
+        return 'orange';
     } elseif (stripos($activity_description, 'created') !== false) {
-        return 'green'; // Color for created activities
+        return 'green';
     } else {
-        return 'black'; // Default color
+        return 'black';
     }
 }
 
@@ -140,21 +140,122 @@ $conn->close();
             font-size: 12px;
             font-weight: bold;
         }
+
+        .icon {
+            font-size: 24px;
+            cursor: pointer;
+            position: relative;
+            margin-right: 10px;
+        }
+
+        .icon .count {
+            position: absolute;
+            top: -5px;
+            right: -13px;
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 5px;
+            font-size: 12px;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 40px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            width: 300px;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .dropdown.active {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .dropdown-item button.decline {
+            background-color: #dc3545;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 10px;
+        }
+
+        @media screen and (max-width: 768px) {
+            .friend-requests-container {
+                position: fixed;
+                top: 19px;
+                right: 80px;
+                cursor: pointer;
+                display: inline-block;
+            }
+
+
+            .dropdown {
+                position: absolute;
+                top: 40px;
+                right: -30px;
+                width: 210px;
+                padding: 10px;
+            }
+
+            footer a {
+                font-size: 10px;
+            }
+
+            footer p {
+                font-size: 10px;
+            }
+        }
     </style>
 
 </head>
 
 <body>
-
-    <!-- Header -->
     <header>
         <nav>
             <div class="logo">ScholarWeb</div>
+            <div class="friend-requests-container">
+                <div class="icon" id="friendRequestIcon">
+                    <i class="fas fa-bell"></i>
+                    <span class="count" id="requestCount">0</span>
+                </div>
+
+                <div class="dropdown" id="friendRequestDropdown">
+                </div>
+            </div>
+
             <div class="hamburger" id="hamburger">
-                <i class="fa fa-bars"></i> <!-- Hamburger Icon -->
+                <i class="fa fa-bars"></i>
             </div>
             <ul class="menu" id="menu">
                 <li><a href="profile.php"><i class="fa fa-user" id="active"></i>&nbsp; Profile</a></li>
+                <li><a href="friends_list.php"><i class="fa fa-users"></i>&nbsp; Friends</a></li>
                 <li><a href="feed.php">
                         <i class="fa-solid fa-newspaper"></i>&nbsp; Feed
                         <?php if ($new_post_count > 0): ?>
@@ -181,29 +282,24 @@ $conn->close();
             </ul>
         </nav>
     </header>
-
-
     <section class="hero">
         <div class="hero-content">
 
             <!-- User Info Section -->
             <div class="dashboard-container">
-                <!-- Profile Picture Display -->
                 <div class="profile-section">
                     <?php
-                    // Define the upload directory
+
                     $uploadDirectory = 'uploads/profile_pics/';
 
-                    // Set a default image if no profile picture exists for the user
+
                     $profilePicPath = $uploadDirectory . ($user['profile_pic'] ? $user['profile_pic'] : 'default.png');
                     ?>
-                    <!-- Display the user's profile picture -->
                     <img src="<?php echo $profilePicPath; ?>" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 50%;">
 
                 </div>
                 <h1>Welcome, <?php echo htmlspecialchars($user['name']); ?>!</h1>
                 <p>Your email: <?php echo htmlspecialchars($user['email']); ?></p>
-                <!-- <a href="profile.php" class="btn">Edit Profile</a> -->
             </div>
 
             <!-- Class Schedule Section -->
@@ -234,8 +330,6 @@ $conn->close();
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </ul>
-
-                <!-- <a href="#" class="button-17">Submit Homework</a> -->
             </div>
 
             <!-- Homework Container -->
@@ -312,11 +406,10 @@ $conn->close();
             </ul>
         </div>
     </section>
-
     <footer>
         <p>&copy; 2024 ScholarWeb. All Rights Reserved.</p>
         <br>
-        <p>version 2.1.2 </p>
+        <p>Version 2.1.2 </p>
         <ul class="footer-links">
             <li><a href="contact.php">Contact Support</a></li>
             <li><a href="terms.php">Terms of Service</a></li>
@@ -324,8 +417,30 @@ $conn->close();
         </ul>
     </footer>
 
-    <script src="script.js"></script>
+    <!-- <script src="script.js"></script> -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
+        document.getElementById('hamburger').onclick = function(event) {
+            event.stopPropagation();
+            const menu = document.getElementById('menu');
+            const hamburger = document.getElementById('hamburger');
+            menu.classList.toggle('show');
+            hamburger.classList.toggle('active');
+        };
+
+
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('menu');
+            const hamburger = document.getElementById('hamburger');
+
+
+            if (!hamburger.contains(event.target) && !menu.contains(event.target)) {
+                menu.classList.remove('show');
+                hamburger.classList.remove('active');
+            }
+        });
+
         var newTaskCount = <?php echo $new_task_count; ?>;
         var newNotificationCount = <?php echo $new_notification_count; ?>;
         var newPostCount = <?php echo $new_post_count; ?>;
@@ -341,8 +456,100 @@ $conn->close();
                 document.querySelector('i.fa-newspaper').classList.add('glow');
             }
         });
-    </script>
 
+        $(document).ready(function() {
+            // Friend request icon click event to toggle dropdown
+            $('#friendRequestIcon').on('click', function() {
+                $('#friendRequestDropdown').toggleClass('active');
+            });
+
+            // Load friend requests from the server
+            function loadFriendRequests() {
+                $.ajax({
+                    url: 'load_friend_requests.php', // Backend script to fetch friend requests
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        var dropdown = $('#friendRequestDropdown');
+                        dropdown.empty(); // Clear previous content
+
+                        if (response.requests.length > 0) {
+                            response.requests.forEach(function(request) {
+                                dropdown.append(`
+                                    <div class="dropdown-item">
+                                        <span>${request.name}</span>
+                                        <button class="accept-btn" data-id="${request.id}">Accept</button>
+                                        <button class="decline-btn decline" data-id="${request.id}">Decline</button>
+                                    </div>
+                                `);
+                            });
+                        } else {
+                            dropdown.append('<div class="empty">No friend requests</div>');
+                        }
+
+                        // Update the request count badge
+                        $('#requestCount').text(response.requests.length);
+                    }
+                });
+            }
+
+            // Call this function to load friend requests on page load
+            loadFriendRequests();
+
+            // Handle Accept button click
+            $(document).on('click', '.accept-btn', function() {
+                var requestId = $(this).data('id');
+                $.ajax({
+                    url: 'accept_friend_request.php',
+                    method: 'POST',
+                    data: {
+                        request_id: requestId
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            showToast('Friend request accepted!');
+                            loadFriendRequests(); // Reload requests
+                        } else {
+                            showToast(response.message);
+                        }
+                    },
+                    error: function() {
+                        showToast('Error accepting friend request.');
+                    }
+                });
+            });
+
+            // Handle Decline button click
+            $(document).on('click', '.decline-btn', function() {
+                var requestId = $(this).data('id');
+                $.ajax({
+                    url: 'decline_friend_request.php',
+                    method: 'POST',
+                    data: {
+                        request_id: requestId
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            showToast('Friend request declined.');
+                            loadFriendRequests(); // Reload requests
+                        } else {
+                            showToast(response.message);
+                        }
+                    },
+                    error: function() {
+                        showToast('Error declining friend request.');
+                    }
+                });
+            });
+
+            // Show toast notification
+            function showToast(message) {
+                $('#message').text(message).fadeIn().delay(2000).fadeOut();
+            }
+        });
+    </script>
 
 </body>
 
