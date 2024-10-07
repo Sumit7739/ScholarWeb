@@ -5,8 +5,12 @@ include("config.php");
 // Assuming the current user is stored in session
 $current_user_id = $_SESSION['user_id'];
 
-// Fetch the user's friends from the database
-$sql = "SELECT u.id, u.name, u.profile_pic 
+// Fetch the user's friends and count unread messages from the database
+$sql = "SELECT u.id, u.name, u.profile_pic, 
+               (SELECT COUNT(*) FROM chats c 
+                WHERE c.sender_id = u.id 
+                AND c.receiver_id = $current_user_id 
+                AND c.is_read = 0) AS unread_count
         FROM users u
         JOIN friendships f ON (f.user_id = u.id OR f.friend_id = u.id)
         WHERE (f.user_id = $current_user_id OR f.friend_id = $current_user_id)
@@ -84,9 +88,10 @@ $result = $conn->query($sql);
         }
 
         .friends-container {
+            width: 96%;
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 10px;
         }
 
         .friend-item {
@@ -112,6 +117,7 @@ $result = $conn->query($sql);
         }
 
         .chat-icon {
+            /* margin-right: 20px; */
             font-size: 24px;
             cursor: pointer;
             color: #3498db;
@@ -119,6 +125,157 @@ $result = $conn->query($sql);
 
         .chat-icon:hover {
             color: #2980b9;
+        }
+
+        /* Badge styles */
+        .badge {
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
+            font-size: 10px;
+        }
+
+        /* Container for friend requests */
+        #friendRequestContainer {
+            background-color: #f9f9f9;
+            /* Light background color */
+            border: 1px solid #ddd;
+            /* Border for the container */
+            border-radius: 8px;
+            /* Rounded corners */
+            padding: 15px;
+            /* Padding inside the container */
+            width: 90%;
+            max-width: 400px;
+            /* Maximum width of the container */
+            margin: 20px auto;
+            /* Centering the container */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            /* Subtle shadow effect */
+        }
+
+        /* Title for the container */
+        #friendRequestContainer h2 {
+            font-size: 18px;
+            /* Font size for the title */
+            margin-bottom: 10px;
+            /* Space below the title */
+            color: #333;
+            /* Dark color for the title */
+        }
+
+        /* Dropdown for friend requests */
+        #friendRequestDropdown {
+            max-height: 300px;
+            /* Maximum height for the dropdown */
+            overflow-y: auto;
+            /* Enable vertical scrolling */
+        }
+
+        /* Individual friend request items */
+        .dropdown-item {
+            display: flex;
+            /* Flex layout for items */
+            justify-content: space-between;
+            /* Space between text and buttons */
+            align-items: center;
+            /* Center items vertically */
+            padding: 10px;
+            /* Padding for each item */
+            border-bottom: 1px solid #ddd;
+            /* Bottom border for separation */
+            transition: background-color 0.3s;
+            /* Smooth background change */
+        }
+
+        .dropdown-item:hover {
+            background-color: #f0f0f0;
+            /* Change background on hover */
+        }
+
+        /* Empty state for no requests */
+        .empty {
+            color: #777;
+            /* Grey color for empty state text */
+            text-align: center;
+            /* Center text */
+            padding: 10px;
+            /* Padding for empty state */
+        }
+
+        /* Error message style */
+        .error {
+            color: red;
+            /* Red color for error messages */
+            text-align: center;
+            /* Center text */
+            padding: 10px;
+            /* Padding for error messages */
+        }
+
+        /* Accept and Decline buttons */
+        .accept-btn,
+        .decline-btn {
+            border: none;
+            /* Remove default border */
+            padding: 5px 10px;
+            /* Padding for buttons */
+            border-radius: 5px;
+            /* Rounded corners for buttons */
+            cursor: pointer;
+            /* Pointer cursor on hover */
+        }
+
+        /* Accept button style */
+        .accept-btn {
+            background-color: #4CAF50;
+            /* Green background */
+            color: white;
+            /* White text */
+        }
+
+        /* Decline button style */
+        .decline-btn {
+            background-color: #f44336;
+            /* Red background */
+            color: white;
+            /* White text */
+        }
+
+        /* Button hover effects */
+        .accept-btn:hover {
+            background-color: #45a049;
+            /* Darker green on hover */
+        }
+
+        .decline-btn:hover {
+            background-color: #e53935;
+            /* Darker red on hover */
+        }
+
+        /* Toast message styles */
+        #message {
+            display: none;
+            /* Hidden by default */
+            position: fixed;
+            /* Fixed position */
+            bottom: 20px;
+            /* Position from the bottom */
+            left: 50%;
+            /* Center horizontally */
+            transform: translateX(-50%);
+            /* Adjust for center */
+            background-color: rgba(0, 0, 0, 0.8);
+            /* Semi-transparent background */
+            color: white;
+            /* White text */
+            padding: 10px 20px;
+            /* Padding for toast */
+            border-radius: 5px;
+            /* Rounded corners */
+            z-index: 1000;
+            /* Ensure it appears above other content */
         }
     </style>
 </head>
@@ -152,6 +309,13 @@ $result = $conn->query($sql);
             </div>
         </div>
     </div>
+    <div id="friendRequestContainer">
+        <h2>Friend Requests</h2>
+        <div id="friendRequestDropdown" class="dropdown">
+            <!-- Friend requests will be dynamically loaded here -->
+        </div>
+    </div>
+
     <div class="friends-container">
         <h2>Your Friends</h2>
         <?php while ($row = $result->fetch_assoc()) { ?>
@@ -160,7 +324,12 @@ $result = $conn->query($sql);
                     <img src="uploads/profile_pics/<?php echo $row['profile_pic'] ?: 'default.png'; ?>" alt="Profile Picture">
                     <p><?php echo $row['name']; ?></p>
                 </div>
-                <i class="fas fa-comments chat-icon" onclick="startChat(<?php echo $row['id']; ?>)"></i>
+                <div class="chat-icon-container">
+                    <i class="fas fa-comments chat-icon" onclick="startChat(<?php echo $row['id']; ?>)"></i>
+                    <?php if ($row['unread_count'] > 0) { ?>
+                        <span class="badge"><?php echo $row['unread_count']; ?></span>
+                    <?php } ?>
+                </div>
             </div>
         <?php } ?>
     </div>
@@ -214,6 +383,93 @@ $result = $conn->query($sql);
         function startChat(friendId) {
             window.location.href = 'chat.php?friend_id=' + friendId; // Redirect to chat page with friend's ID
         }
+        $(document).ready(function() {
+            // Load friend requests from the server
+            function loadFriendRequests() {
+                $.ajax({
+                    url: 'load_friend_requests.php', // Backend script to fetch friend requests
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        var dropdown = $('#friendRequestDropdown');
+                        dropdown.empty(); // Clear previous content
+
+                        if (response.requests.length > 0) {
+                            response.requests.forEach(function(request) {
+                                dropdown.append(`
+                            <div class="dropdown-item">
+                                <span>${request.name}</span>
+                                <button class="accept-btn" data-id="${request.id}">Accept</button>
+                                <button class="decline-btn" data-id="${request.id}">Decline</button>
+                            </div>
+                        `);
+                            });
+                        } else {
+                            dropdown.append('<div class="empty">No friend requests</div>');
+                        }
+                    },
+                    error: function() {
+                        $('#friendRequestDropdown').html('<div class="error">Error loading friend requests.</div>');
+                    }
+                });
+            }
+
+            // Call this function to load friend requests on page load
+            loadFriendRequests();
+
+            // Handle Accept button click
+            $(document).on('click', '.accept-btn', function() {
+                var requestId = $(this).data('id');
+                $.ajax({
+                    url: 'accept_friend_request.php',
+                    method: 'POST',
+                    data: {
+                        request_id: requestId
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            showToast('Friend request accepted!');
+                            loadFriendRequests(); // Reload requests
+                        } else {
+                            showToast(response.message);
+                        }
+                    },
+                    error: function() {
+                        showToast('Error accepting friend request.');
+                    }
+                });
+            });
+
+            // Handle Decline button click
+            $(document).on('click', '.decline-btn', function() {
+                var requestId = $(this).data('id');
+                $.ajax({
+                    url: 'decline_friend_request.php',
+                    method: 'POST',
+                    data: {
+                        request_id: requestId
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            showToast('Friend request declined.');
+                            loadFriendRequests(); // Reload requests
+                        } else {
+                            showToast(response.message);
+                        }
+                    },
+                    error: function() {
+                        showToast('Error declining friend request.');
+                    }
+                });
+            });
+
+            // Show toast notification
+            function showToast(message) {
+                $('#message').text(message).fadeIn().delay(2000).fadeOut();
+            }
+        });
     </script>
 
 </body>

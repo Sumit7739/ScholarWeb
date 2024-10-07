@@ -9,12 +9,31 @@ if (isset($_GET['friend_id'])) {
     $friend_id = intval($_GET['friend_id']);
 
     // Fetch friend details
-    $friend_sql = "SELECT id, name, profile_pic FROM users WHERE id = $friend_id LIMIT 1";
-    $friend_result = $conn->query($friend_sql);
+    $friend_sql = "SELECT id, name, profile_pic FROM users WHERE id = ?";
+    $stmt = $conn->prepare($friend_sql);
+    $stmt->bind_param("i", $friend_id);
+    $stmt->execute();
+    $friend_result = $stmt->get_result();
     $friend = $friend_result->fetch_assoc();
+
+    if (!$friend) {
+        die("Friend not found.");
+    }
+
+    // Mark all unread messages from this friend as read
+    $update_sql = "UPDATE chats 
+                   SET is_read = 1 
+                   WHERE sender_id = ? 
+                   AND receiver_id = ? 
+                   AND is_read = 0";
+    $stmt = $conn->prepare($update_sql);
+    $stmt->bind_param("ii", $friend_id, $current_user_id);
+    $stmt->execute();
+    $stmt->close();
 } else {
     die("No friend selected.");
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -124,27 +143,55 @@ if (isset($_GET['friend_id'])) {
                 }
             }
 
+            .chat-container {
+                display: flex;
+                flex-direction: column;
+                padding: 10px;
+                height: 90vh;
+                /* This looks fine */
+                margin: 0 auto;
+                background-color: #000;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Force scrollbar to be visible */
             .chat-box {
                 flex-grow: 1;
                 padding: 20px;
                 background-color: #ddd;
-                overflow-y: auto;
+                overflow-y: scroll;
+                scroll-behavior: smooth;
                 display: flex;
                 flex-direction: column;
                 border-radius: 10px 10px 0 0;
                 gap: 10px;
                 /* Space between messages */
+                height: calc(100vh - 150px);
+                /* Explicit height for web view compatibility */
+                -webkit-overflow-scrolling: touch;
+                /* Smooth scrolling for mobile */
+                scrollbar-width: thin;
+                /* For Firefox */
+                scrollbar-color: #888 #ddd;
+                /* For Firefox: custom scrollbar color */
             }
 
-            .chat-message {
-                max-width: 70%;
-                padding: 10px 15px;
-                border-radius: 20px;
-                position: relative;
-                line-height: 1.5;
-                font-size: 16px;
-                margin: 0;
-                /* Reset margin to 0 */
+            /* Custom scrollbar for Webkit browsers (e.g., Chrome, Safari) */
+            .chat-box::-webkit-scrollbar {
+                width: 8px;
+                /* Width of the scrollbar */
+            }
+
+            .chat-box::-webkit-scrollbar-thumb {
+                background-color: #ffff02;
+                /* Scrollbar color */
+                border-radius: 10px;
+            }
+
+            .chat-box::-webkit-scrollbar-track {
+                background-color: #ddd;
+                /* Scrollbar background */
             }
 
             .chat-message.sent {

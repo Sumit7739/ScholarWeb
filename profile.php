@@ -207,7 +207,13 @@ $conn->close();
         }
 
         @media screen and (max-width: 768px) {
-            .friend-requests-container {
+
+            .dashboard-container {
+                text-align: center;
+                align-items: center;
+            }
+
+            .notification-container {
                 position: fixed;
                 top: 19px;
                 right: 80px;
@@ -240,13 +246,14 @@ $conn->close();
     <header>
         <nav>
             <div class="logo">ScholarWeb</div>
-            <div class="friend-requests-container">
-                <div class="icon" id="friendRequestIcon">
-                    <i class="fas fa-bell"></i>
-                    <span class="count" id="requestCount">0</span>
+            <div class="notification-container">
+                <div class="icon" id="messageNotificationIcon">
+                    <i class="fas fa-envelope"></i>
+                    <span class="count" id="messageCount">0</span>
                 </div>
 
-                <div class="dropdown" id="friendRequestDropdown">
+                <div class="dropdown" id="messageNotificationDropdown">
+                    <!-- Messages will load here -->
                 </div>
             </div>
 
@@ -284,7 +291,6 @@ $conn->close();
     </header>
     <section class="hero">
         <div class="hero-content">
-
             <!-- User Info Section -->
             <div class="dashboard-container">
                 <div class="profile-section">
@@ -429,11 +435,9 @@ $conn->close();
             hamburger.classList.toggle('active');
         };
 
-
         document.addEventListener('click', function(event) {
             const menu = document.getElementById('menu');
             const hamburger = document.getElementById('hamburger');
-
 
             if (!hamburger.contains(event.target) && !menu.contains(event.target)) {
                 menu.classList.remove('show');
@@ -458,98 +462,77 @@ $conn->close();
         });
 
         $(document).ready(function() {
-            // Friend request icon click event to toggle dropdown
-            $('#friendRequestIcon').on('click', function() {
-                $('#friendRequestDropdown').toggleClass('active');
+            // Toggle message notification dropdown
+            $('#messageNotificationIcon').on('click', function() {
+                $('#messageNotificationDropdown').toggleClass('active');
             });
 
-            // Load friend requests from the server
-            function loadFriendRequests() {
+            // Load unread chat messages from the server
+            function loadUnreadMessages() {
                 $.ajax({
-                    url: 'load_friend_requests.php', // Backend script to fetch friend requests
+                    url: 'load_unread_messages.php', // Backend script to fetch unread messages
                     method: 'GET',
                     dataType: 'json',
                     success: function(response) {
-                        var dropdown = $('#friendRequestDropdown');
+                        var dropdown = $('#messageNotificationDropdown');
                         dropdown.empty(); // Clear previous content
 
-                        if (response.requests.length > 0) {
-                            response.requests.forEach(function(request) {
-                                dropdown.append(`
-                                    <div class="dropdown-item">
-                                        <span>${request.name}</span>
-                                        <button class="accept-btn" data-id="${request.id}">Accept</button>
-                                        <button class="decline-btn decline" data-id="${request.id}">Decline</button>
-                                    </div>
-                                `);
+                        if (response.messages.length > 0) {
+                            // Group messages by sender
+                            var messageCountByUser = {};
+
+                            response.messages.forEach(function(message) {
+                                if (!messageCountByUser[message.sender_id]) {
+                                    messageCountByUser[message.sender_id] = {
+                                        count: 0,
+                                        name: message.sender_name
+                                    };
+                                }
+                                messageCountByUser[message.sender_id].count++;
                             });
+
+                            // Display the grouped messages
+                            for (var sender_id in messageCountByUser) {
+                                var userInfo = messageCountByUser[sender_id];
+                                dropdown.append(`
+                                <div class="dropdown-item">
+                                    <span>${userInfo.count} message(s) from ${userInfo.name}</span>
+                                    <a href="chat.php?friend_id=${sender_id}" class="view-message-btn">View</a>
+                                </div>
+                            `);
+                            }
                         } else {
-                            dropdown.append('<div class="empty">No friend requests</div>');
+                            dropdown.append('<div class="empty">No unread messages</div>');
                         }
 
-                        // Update the request count badge
-                        $('#requestCount').text(response.requests.length);
+                        // Update the message count badge
+                        $('#messageCount').text(Object.keys(messageCountByUser).length);
                     }
                 });
             }
 
-            // Call this function to load friend requests on page load
-            loadFriendRequests();
+            // Load unread messages on page load
+            loadUnreadMessages();
 
-            // Handle Accept button click
-            $(document).on('click', '.accept-btn', function() {
-                var requestId = $(this).data('id');
-                $.ajax({
-                    url: 'accept_friend_request.php',
-                    method: 'POST',
-                    data: {
-                        request_id: requestId
-                    },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            showToast('Friend request accepted!');
-                            loadFriendRequests(); // Reload requests
-                        } else {
-                            showToast(response.message);
-                        }
-                    },
-                    error: function() {
-                        showToast('Error accepting friend request.');
-                    }
-                });
+            // Set an interval to refresh the notifications every 30 seconds
+            setInterval(function() {
+                loadUnreadMessages();
+            }, 30000);
+
+            // Close dropdown when clicking outside of it
+            $(document).click(function(event) {
+                if (!$(event.target).closest('#messageNotificationIcon, #messageNotificationDropdown').length) {
+                    $('#messageNotificationDropdown').removeClass('active');
+                }
             });
-
-            // Handle Decline button click
-            $(document).on('click', '.decline-btn', function() {
-                var requestId = $(this).data('id');
-                $.ajax({
-                    url: 'decline_friend_request.php',
-                    method: 'POST',
-                    data: {
-                        request_id: requestId
-                    },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            showToast('Friend request declined.');
-                            loadFriendRequests(); // Reload requests
-                        } else {
-                            showToast(response.message);
-                        }
-                    },
-                    error: function() {
-                        showToast('Error declining friend request.');
-                    }
-                });
-            });
-
-            // Show toast notification
-            function showToast(message) {
-                $('#message').text(message).fadeIn().delay(2000).fadeOut();
-            }
         });
+
+        // Show toast notification
+        function showToast(message) {
+            $('#message').text(message).fadeIn().delay(2000).fadeOut();
+        }
     </script>
+
 
 </body>
 
