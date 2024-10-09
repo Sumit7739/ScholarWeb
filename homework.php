@@ -262,6 +262,7 @@ $conn->close(); // Close the database connection
     <table border="1" cellpadding="10">
         <thead>
             <tr>
+                <th>Task Number</th>
                 <th>Task Name</th>
                 <th>Task Description</th>
                 <th>Due Date</th>
@@ -273,6 +274,7 @@ $conn->close(); // Close the database connection
             <?php if (!empty($tasks)) : ?>
                 <?php foreach ($tasks as $task) : ?>
                     <tr>
+                        <td><?php echo htmlspecialchars($task['id']); ?></td>
                         <td><?php echo htmlspecialchars($task['task_name']); ?></td>
                         <td><?php echo htmlspecialchars($task['task_description']); ?></td>
                         <td><?php echo htmlspecialchars($task['due_date']); ?></td>

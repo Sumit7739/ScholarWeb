@@ -111,6 +111,47 @@ function getActivityColor($activity_description)
 }
 
 
+$payment_status_message = '';
+$status_class = '';
+
+// Query to fetch payment status based on user_id
+$sql = "SELECT payment_status FROM payments WHERE user_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Fetch the status
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        // Set status message and corresponding class
+        switch ($row['payment_status']) {
+            case 'Paid':
+                $payment_status_message = 'Payment Status: Paid';
+                $status_class = 'status-paid';
+                break;
+            case 'Pending':
+                $payment_status_message = 'Payment Status: Pending';
+                $status_class = 'status-pending';
+                break;
+            case 'Partially-Paid':
+                $payment_status_message = 'Payment Status: Partially Paid';
+                $status_class = 'status-partially-paid';
+                break;
+            case 'Overdue':
+                $payment_status_message = 'Payment Status: Overdue';
+                $status_class = 'status-overdue';
+                break;
+            default:
+                $payment_status_message = 'No payment status available';
+                $status_class = 'status-none';
+                break;
+        }
+    }
+} else {
+    $payment_status_message = "No payment records found.";
+    $status_class = 'status-none';
+}
 
 // Close the statement and connection if necessary
 $stmt->close();
@@ -129,6 +170,50 @@ $conn->close();
     <link rel="stylesheet" href="dashstyles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* General alert styling */
+        .alert {
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        /* Status: Paid - Green */
+        .status-paid {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* Status: Pending - Red */
+        .status-pending {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Status: Partially Paid - Orange */
+        .status-partially-paid {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        /* Status: Overdue - Dark Red */
+        .status-overdue {
+            background-color: #f5c6cb;
+            color: #721c24;
+            border: 1px solid #f1b0b7;
+        }
+
+        /* Status: None (No records found) - Gray */
+        .status-none {
+            background-color: #e2e3e5;
+            color: #6c757d;
+            border: 1px solid #d6d8db;
+        }
+
         .badge {
             position: relative;
             top: -10px;
@@ -269,6 +354,10 @@ $conn->close();
                             <span class="badge"><?php echo $new_post_count; ?></span>
                         <?php endif; ?>
                     </a></li>
+                <li><a href="payment_details.php" class="btn btn-primary">
+                        <i class="fas fa-money-check-alt"></i> Payment
+                    </a>
+                </li>
                 <li><a href="all_tasks.php">
                         <i class="fa fa-tasks"></i>&nbsp; Tasks
                         <?php if ($new_task_count > 0): ?>
@@ -306,95 +395,102 @@ $conn->close();
                 </div>
                 <h1>Welcome, <?php echo htmlspecialchars($user['name']); ?>!</h1>
                 <p>Your email: <?php echo htmlspecialchars($user['email']); ?></p>
+
+
+                <div class="alert <?php echo $status_class; ?>">
+                    <?php echo $payment_status_message; ?>
+                </div>
             </div>
 
-            <!-- Class Schedule Section -->
-            <div class="section class-info-container">
-                <h2><i class="fas fa-calendar-alt"></i> Class Schedule</h2>
-                <hr>
-                <ul>
-                    <?php if (empty($classes)): ?>
-                        <li>No classes found.</li>
-                    <?php else: ?>
-                        <?php foreach ($classes as $class): ?>
-                            <li> <?php echo htmlspecialchars($class['class_name']) . " - " . htmlspecialchars($class['schedule_date']) . ", " . htmlspecialchars($class['time']); ?></li>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </ul>
-            </div>
+        </div>
 
-            <!-- Tasks Section -->
-            <div class="section tasks-container">
-                <h2><i class="fas fa-tasks"></i> Your Tasks</h2>
-                <hr> <br>
-                <ul>
-                    <?php if (empty($tasks)): ?>
-                        <li>No tasks found.</li>
-                    <?php else: ?>
-                        <?php foreach ($tasks as $task): ?>
-                            <li><?php echo htmlspecialchars($task['id']) . ". " . htmlspecialchars($task['task_name']) . " (Due: " . htmlspecialchars($task['due_date']) . ")"; ?></li>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </ul>
-            </div>
+        <!-- Class Schedule Section -->
+        <div class="section class-info-container">
+            <h2><i class="fas fa-calendar-alt"></i> Class Schedule</h2>
+            <hr>
+            <ul>
+                <?php if (empty($classes)): ?>
+                    <li>No classes found.</li>
+                <?php else: ?>
+                    <?php foreach ($classes as $class): ?>
+                        <li> <?php echo htmlspecialchars($class['class_name']) . " - " . htmlspecialchars($class['schedule_date']) . ", " . htmlspecialchars($class['time']); ?></li>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </ul>
+        </div>
 
-            <!-- Homework Container -->
-            <div class="section homework-container">
-                <h2><i class="fas fa-book"></i> Homework</h2>
-                <hr>
-                <br>
-                <h2><a href="homework.php" class="button">Submit your Homework</a></h2>
-                <hr>
-                <h2><a href="all_homework.php" class="button">View all Homeworks</a></h2>
-            </div>
+        <!-- Tasks Section -->
+        <div class="section tasks-container">
+            <h2><i class="fas fa-tasks"></i> Your Tasks</h2>
+            <hr> <br>
+            <ul>
+                <?php if (empty($tasks)): ?>
+                    <li>No tasks found.</li>
+                <?php else: ?>
+                    <?php foreach ($tasks as $task): ?>
+                        <li><?php echo htmlspecialchars($task['id']) . ". " . htmlspecialchars($task['task_name']) . " (Due: " . htmlspecialchars($task['due_date']) . ")"; ?></li>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </ul>
+        </div>
 
-            <!-- Notifications Section -->
-            <div class="section notifications-container">
-                <h2><i class="fas fa-bell"></i> Notifications</h2>
-                <hr>
-                <ul>
-                    <?php if (empty($notifications)): ?>
-                        <li>No notifications found.</li>
-                    <?php else: ?>
-                        <?php foreach ($notifications as $notification): ?>
-                            <li><?php echo htmlspecialchars($notification['notification_text']) . " (date: " . htmlspecialchars($notification['created_at']) . ")"; ?></li>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </ul>
-            </div>
+        <!-- Homework Container -->
+        <div class="section homework-container">
+            <h2><i class="fas fa-book"></i> Homework</h2>
+            <hr>
+            <br>
+            <h2><a href="homework.php" class="button">Submit your Homework</a></h2>
+            <hr>
+            <h2><a href="all_homework.php" class="button">View all Homeworks</a></h2>
+        </div>
+
+        <!-- Notifications Section -->
+        <div class="section notifications-container">
+            <h2><i class="fas fa-bell"></i> Notifications</h2>
+            <hr>
+            <ul>
+                <?php if (empty($notifications)): ?>
+                    <li>No notifications found.</li>
+                <?php else: ?>
+                    <?php foreach ($notifications as $notification): ?>
+                        <li><?php echo htmlspecialchars($notification['notification_text']) . " (date: " . htmlspecialchars($notification['created_at']) . ")"; ?></li>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </ul>
+        </div>
 
 
-            <div class="section progress-container">
-                <h2><i class="fas fa-chart-line"></i> Progress Tracker</h2>
-                <hr>
-                <ul>
-                    <?php if (empty($progress)): ?>
-                        <li>No progress data found.</li>
-                    <?php else: ?>
-                        <?php foreach ($progress as $item): ?>
-                            <li>
-                                <div>
-                                    <?php echo htmlspecialchars($item['name']); ?>:
-                                    <?php echo htmlspecialchars($item['progress']); ?>% completed
-                                </div>
-                                <div class="progress-wrapper">
-                                    <div class="progress-bar" style="width: <?php echo htmlspecialchars($item['progress']); ?>%;"></div>
-                                </div>
-                            </li>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </ul>
-            </div>
+        <div class="section progress-container">
+            <h2><i class="fas fa-chart-line"></i> Progress Tracker</h2>
+            <hr>
+            <ul>
+                <?php if (empty($progress)): ?>
+                    <li>No progress data found.</li>
+                <?php else: ?>
+                    <?php foreach ($progress as $item): ?>
+                        <li>
+                            <div>
+                                <?php echo htmlspecialchars($item['name']); ?>:
+                                <?php echo htmlspecialchars($item['progress']); ?>% completed
+                            </div>
+                            <div class="progress-wrapper">
+                                <div class="progress-bar" style="width: <?php echo htmlspecialchars($item['progress']); ?>%;"></div>
+                            </div>
+                        </li>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </ul>
+        </div>
 
-            <!-- Resources Section -->
-            <div class="section resources-container">
-                <h2>Resources</h2>
-                <hr>
-                <ul>
-                    <li><a href="https://sumit7739.github.io/Webdev/" target="_blank">Webdev Documentation</a></li>
+        <!-- Resources Section -->
+        <div class="section resources-container">
+            <h2>Resources</h2>
+            <hr>
+            <ul>
+                <li><a href="https://sumit7739.github.io/Webdev/" target="_blank">Webdev Documentation</a></li>
 
-                </ul>
-            </div>
+            </ul>
+        </div>
         </div>
         <!-- Recent Activity Section -->
         <div class="section recent-activity-container">
