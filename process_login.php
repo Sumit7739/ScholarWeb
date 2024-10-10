@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             mysqli_stmt_close($activityStmt);
 
             // Redirect to the dashboard or home page
-            header("Location: profile.php");
+            header("Location: welcome.php");
             exit;
         } else {
             // Invalid password
